@@ -1,0 +1,362 @@
+let dataTableInstance = null;
+let dataTableHeaders = null;
+let currentCorpus = "all";
+let currentYearRange = null;
+
+const MULTI_VALUE_COLS = new Set([
+    "TREND", "LLM ITERACTION", "CONTEXTUAL INFO", "APPROACH", "SCOPE",
+    "BENCHMARK", "LLMs USED", "EVALUATION METRIC", "TOOL", "TYPE OF CONTRIBUTION", "FOCUS",
+]);
+
+const NO_FILTER_COLS = new Set(["TITLE", "ABSTRACT", "BIBTEX"]);
+
+const CHIP_COLORS = {
+    "TREND":                null,
+    "LLM ITERACTION":       null,
+    "CONTEXTUAL INFO":      null,
+    "APPROACH":             null,
+    "SCOPE":                null,
+    "FOCUS":                null,
+    "BENCHMARK":            { bg: "#eceff1", fg: "#37474f" },
+    "LLMs USED":            { bg: "#e0f7fa", fg: "#00695c" },
+    "EVALUATION METRIC":    { bg: "#f3e5f5", fg: "#6a1b9a" },
+    "TOOL":                 { bg: "#efebe9", fg: "#4e342e" },
+    "TYPE OF CONTRIBUTION": { bg: "#f1f8e9", fg: "#33691e" },
+    "PUBLICATION TYPE":     null,
+};
+
+function showAbstract(title, abstract) {
+    document.getElementById("modal-abstract-title").textContent = title;
+    document.getElementById("modal-abstract-content").textContent = abstract;
+    M.Modal.getInstance(document.getElementById("modal-abstract")).open();
+}
+
+function showAbstractFromAttr(el) {
+    showAbstract(
+        decodeURIComponent(el.getAttribute("data-title") || ""),
+        decodeURIComponent(el.getAttribute("data-abstract") || "")
+    );
+}
+
+let _lastBibtexBlobUrl = null;
+function showBibtex(bibtex) {
+    document.getElementById("modal-bibtex-content").textContent = bibtex;
+    const dlBtn = document.getElementById("download-bibtex-modal");
+    if (_lastBibtexBlobUrl) URL.revokeObjectURL(_lastBibtexBlobUrl);
+    _lastBibtexBlobUrl = URL.createObjectURL(new Blob([bibtex], { type: "text/plain" }));
+    dlBtn.href = _lastBibtexBlobUrl;
+    M.Modal.getInstance(document.getElementById("modal-bibtex")).open();
+}
+
+function showBibtexFromAttr(el) {
+    showBibtex(decodeURIComponent(el.getAttribute("data-bibtex") || ""));
+}
+
+const PUB_TYPE_COLORS = {
+    "Journal":    { bg: "#bbdefb", fg: "#0d47a1" },
+    "Conference": { bg: "#c8e6c9", fg: "#1b5e20" },
+    "arXiv":      { bg: "#ffcdd2", fg: "#b71c1c" },
+};
+const INTERACTION_COLORS = {
+    "Pure Prompting":   { bg: "#e3f2fd", fg: "#1565c0" },
+    "Hybrid Prompting": { bg: "#1565c0", fg: "#fff" },
+};
+const CONTEXT_COLORS = {
+    "Alone":     { bg: "#e8f5e9", fg: "#2e7d32" },
+    "RAG":       { bg: "#fff3e0", fg: "#e65100" },
+    "Fine-Tune": { bg: "#fce4ec", fg: "#ad1457" },
+};
+const APPROACH_COLORS = {
+    "Tool/Approach": { bg: "#ede7f6", fg: "#4527a0" },
+    "Agent":         { bg: "#4527a0", fg: "#fff" },
+};
+const SCOPE_COLORS = {
+    "Functional":     { bg: "#e0f7fa", fg: "#006064" },
+    "Non-Functional": { bg: "#fff8e1", fg: "#f57f17" },
+};
+const FOCUS_COLORS = {
+    "Code/Proccedure": { bg: "#e8eaf6", fg: "#283593" },
+    "Data":            { bg: "#fff9c4", fg: "#f57f17" },
+};
+const TREND_COLORS = {
+    "Unit Test Generation":             { bg: "#e3f2fd", fg: "#0d47a1" },
+    "High-Level Test Gen":              { bg: "#e8f5e9", fg: "#1b5e20" },
+    "Oracle Generation":                { bg: "#fff3e0", fg: "#e65100" },
+    "Reflections":                      { bg: "#fce4ec", fg: "#ad1457" },
+    "Test Augmentation or Improvement": { bg: "#ede7f6", fg: "#4527a0" },
+    "Test Configuration":               { bg: "#e0f7fa", fg: "#006064" },
+};
+
+const PER_VALUE_MAPS = {
+    "PUBLICATION TYPE": PUB_TYPE_COLORS,
+    "TREND":            TREND_COLORS,
+    "LLM ITERACTION":   INTERACTION_COLORS,
+    "CONTEXTUAL INFO":  CONTEXT_COLORS,
+    "APPROACH":         APPROACH_COLORS,
+    "SCOPE":            SCOPE_COLORS,
+    "FOCUS":            FOCUS_COLORS,
+};
+
+function chipHtml(val, colName) {
+    const valMap = PER_VALUE_MAPS[colName];
+    const c = valMap
+        ? (valMap[val] || { bg: "#e0e0e0", fg: "#333" })
+        : (CHIP_COLORS[colName] || { bg: "#e8f5e9", fg: "#2e7d32" });
+    return `<span class="table-chip" style="background:${c.bg};color:${c.fg}">${val}</span>`;
+}
+
+// ── Column filter state ──
+const columnFilters = {}; // colIdx → Set of checked values
+
+function initDataTable(data, headers) {
+    dataTableHeaders = headers;
+
+    const hiddenSet = new Set(["KEY", "DATABASE"]);
+    const visibleHeaders = headers.filter((h) => !hiddenSet.has(h));
+
+    // Convert YEAR to integer strings
+    data.forEach((r) => {
+        if (r.YEAR) r.YEAR = String(Math.floor(parseFloat(r.YEAR)));
+    });
+
+    const idIdx = visibleHeaders.indexOf("ID");
+    const yearIdx = visibleHeaders.indexOf("YEAR");
+
+    // Custom search: corpus + year range + column filters
+    $.fn.dataTable.ext.search.push((settings, rowData) => {
+        if (settings.nTable.id !== "tabla") return true;
+        const id = rowData[idIdx] || "";
+        if (currentCorpus === "initial" && !id.startsWith("P")) return false;
+        if (currentCorpus === "validation" && !id.startsWith("V")) return false;
+        if (currentYearRange) {
+            const y = parseFloat(rowData[yearIdx]);
+            if (isNaN(y) || y < currentYearRange[0] || y > currentYearRange[1]) return false;
+        }
+        // Column filters (multi-select)
+        for (const [ci, selected] of Object.entries(columnFilters)) {
+            if (!selected || selected.size === 0) continue;
+            const cellVal = rowData[ci] || "";
+            const colName = visibleHeaders[ci];
+            if (MULTI_VALUE_COLS.has(colName)) {
+                const vals = cellVal.split(",").map((v) => v.trim()).filter(Boolean);
+                if (!vals.some((v) => selected.has(v))) return false;
+            } else {
+                let clean = cellVal.trim();
+                if (colName === "PUBLISHED INTO") clean = clean.replace(/^[CJ]:\s*/, "");
+                if (!selected.has(clean)) return false;
+            }
+        }
+        return true;
+    });
+
+    // Chip column defs
+    const allChipCols = [...MULTI_VALUE_COLS, "PUBLICATION TYPE"];
+    const MAX_VISIBLE_CHIPS = 2;
+    const chipDefs = allChipCols
+        .filter((col) => visibleHeaders.includes(col))
+        .map((col) => ({
+            targets: visibleHeaders.indexOf(col),
+            render: (cellData, type) => {
+                if (type !== "display" || !cellData) return cellData || "";
+                const vals = cellData.split(",").map((v) => v.trim()).filter(Boolean);
+                if (vals.length <= MAX_VISIBLE_CHIPS) {
+                    return vals.map((v) => chipHtml(v, col)).join(" ");
+                }
+                const visible = vals.slice(0, MAX_VISIBLE_CHIPS).map((v) => chipHtml(v, col)).join(" ");
+                const extra = vals.slice(MAX_VISIBLE_CHIPS).map((v) => chipHtml(v, col)).join(" ");
+                const remaining = vals.length - MAX_VISIBLE_CHIPS;
+                return `<span class="chip-wrap">${visible}<span class="chip-extra"> ${extra}</span>` +
+                    `<span class="chip-more" onclick="this.parentElement.classList.toggle('expanded')">+${remaining}</span></span>`;
+            },
+        }));
+
+    dataTableInstance = $("#tabla").DataTable({
+        data: data.map((row) => visibleHeaders.map((h) => row[h] || "")),
+        columns: visibleHeaders.map((h) => ({ title: h.replace(/_/g, " ") })),
+        pageLength: 25,
+        columnDefs: [
+            ...chipDefs,
+            {
+                targets: visibleHeaders.indexOf("TITLE"),
+                className: "dt-title",
+                render: (cellData, type, row) => {
+                    if (type !== "display") return cellData;
+                    const bibtex = row[visibleHeaders.indexOf("BIBTEX")] || "";
+                    const url = bibtex.match(/url\s*=\s*[{"]([^}"]+)[}"]/i)?.[1];
+                    return url ? `<a href="${url}" target="_blank">${cellData}</a>` : cellData;
+                },
+            },
+            {
+                targets: visibleHeaders.indexOf("PUBLISHED INTO"),
+                render: (cellData) => cellData.replace(/^[CJ]:\s*/, ""),
+            },
+            {
+                targets: visibleHeaders.indexOf("BIBTEX"),
+                orderable: false,
+                render: (cellData, type) => {
+                    if (type !== "display" || !cellData) return cellData || "";
+                    const encoded = encodeURIComponent(cellData);
+                    return `<a class="green-btn" href="#modal-bibtex" data-bibtex="${encoded}" onclick="showBibtexFromAttr(this)">BibTeX</a>`;
+                },
+            },
+            {
+                targets: visibleHeaders.indexOf("ABSTRACT"),
+                orderable: false,
+                render: (cellData, type, row) => {
+                    if (type !== "display" || !cellData) return cellData || "";
+                    return `<a class="green-btn" href="#modal-abstract"
+                        data-title="${encodeURIComponent(row[visibleHeaders.indexOf("TITLE")] || "")}"
+                        data-abstract="${encodeURIComponent(cellData)}"
+                        onclick="showAbstractFromAttr(this)">INFO</a>`;
+                },
+            },
+        ],
+        initComplete: function () {
+            const api = this.api();
+
+            // Build filter dropdowns in each header
+            api.columns().every(function () {
+                const column = this;
+                const colIdx = column.index();
+                const colName = visibleHeaders[colIdx];
+                const header = $(column.header());
+
+                if (NO_FILTER_COLS.has(colName)) return;
+
+                // Collect unique values
+                const uniqueVals = new Set();
+                column.data().each(function (val) {
+                    if (!val) return;
+                    if (MULTI_VALUE_COLS.has(colName)) {
+                        val.split(",").forEach((v) => {
+                            const t = v.trim();
+                            if (t) uniqueVals.add(t);
+                        });
+                    } else if (colName === "PUBLISHED INTO") {
+                        uniqueVals.add(val.replace(/^[CJ]:\s*/, "").trim());
+                    } else {
+                        uniqueVals.add(val.trim());
+                    }
+                });
+
+                if (uniqueVals.size === 0) return;
+
+                const sorted = [...uniqueVals].sort();
+
+                // Build dropdown HTML
+                const wrapper = $('<div class="col-filter-wrap"></div>');
+                const btn = $('<span class="col-filter-btn" title="Filter">&#9660;</span>');
+                const dropdown = $('<div class="col-filter-dropdown"></div>');
+
+                const controls = $('<div class="col-filter-controls"></div>');
+                const selectAll = $('<a href="#" class="col-filter-action">All</a>');
+                const clearAll = $('<a href="#" class="col-filter-action">None</a>');
+                controls.append(selectAll, clearAll);
+                dropdown.append(controls);
+
+                // Add search box for columns with many values
+                if (sorted.length > 6) {
+                    const search = $('<input type="text" class="col-filter-search" placeholder="Search...">');
+                    dropdown.append(search);
+                    search.on("input", function () {
+                        const q = this.value.toLowerCase();
+                        list.find(".col-filter-item").each(function () {
+                            const text = $(this).find("span").text().toLowerCase();
+                            $(this).toggle(text.includes(q));
+                        });
+                    });
+                }
+
+                const list = $('<div class="col-filter-list"></div>');
+                sorted.forEach((val) => {
+                    const label = $(`<label class="col-filter-item"><input type="checkbox" checked value="${val.replace(/"/g, "&quot;")}"><span>${val}</span></label>`);
+                    list.append(label);
+                });
+                dropdown.append(list);
+
+                wrapper.append(btn, dropdown);
+                header.append(wrapper);
+
+                // Toggle dropdown
+                btn.on("click", function (e) {
+                    e.stopPropagation();
+                    // Close all other dropdowns
+                    $(".col-filter-dropdown.active").not(dropdown).removeClass("active");
+                    dropdown.toggleClass("active");
+                });
+
+                // Prevent sorting when clicking inside dropdown
+                dropdown.on("click", function (e) {
+                    e.stopPropagation();
+                });
+
+                // Select All / None
+                selectAll.on("click", function (e) {
+                    e.preventDefault();
+                    list.find("input[type=checkbox]").prop("checked", true).first().trigger("change");
+                });
+                clearAll.on("click", function (e) {
+                    e.preventDefault();
+                    list.find("input[type=checkbox]").prop("checked", false).first().trigger("change");
+                });
+
+                // On checkbox change, update filter
+                list.on("change", "input[type=checkbox]", function () {
+                    const checked = [];
+                    list.find("input[type=checkbox]:checked").each(function () {
+                        checked.push($(this).val());
+                    });
+                    const allChecked = checked.length === sorted.length;
+                    if (allChecked || checked.length === 0) {
+                        delete columnFilters[colIdx];
+                        btn.removeClass("col-filter-active");
+                    } else {
+                        columnFilters[colIdx] = new Set(checked);
+                        btn.addClass("col-filter-active");
+                    }
+                    updateFilterBadge();
+                    dataTableInstance.draw();
+                });
+            });
+        },
+    });
+
+    // Close dropdowns when clicking outside
+    $(document).on("click", function () {
+        $(".col-filter-dropdown.active").removeClass("active");
+    });
+
+    function updateFilterBadge() {
+        const count = Object.keys(columnFilters).length;
+        const btn = document.getElementById("toggleFilters");
+        const isVisible = document.getElementById("tabla").classList.contains("filters-visible");
+        const arrow = isVisible ? "&#9650;" : "&#9660;";
+        btn.innerHTML = count > 0 ? `${arrow} Filters <span class="filter-badge">${count}</span>` : `${arrow} Filters`;
+    }
+
+    // Toggle filters visibility
+    document.getElementById("toggleFilters").addEventListener("click", () => {
+        const table = document.getElementById("tabla");
+        const visible = table.classList.toggle("filters-visible");
+        if (!visible) {
+            // Clear all active filters when hiding
+            Object.keys(columnFilters).forEach((k) => delete columnFilters[k]);
+            $(".col-filter-btn").removeClass("col-filter-active");
+            $(".col-filter-list input[type=checkbox]").prop("checked", true);
+            $(".col-filter-dropdown.active").removeClass("active");
+            dataTableInstance.draw();
+        }
+        updateFilterBadge();
+    });
+
+    // Page length select
+    document.getElementById("pageLengthSelect").addEventListener("change", (e) => {
+        dataTableInstance.page.len(Number(e.target.value)).draw();
+    });
+}
+
+function setTableFilters(corpus, yearRange) {
+    currentCorpus = corpus;
+    currentYearRange = yearRange;
+    if (dataTableInstance) dataTableInstance.draw();
+}

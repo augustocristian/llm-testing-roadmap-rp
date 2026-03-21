@@ -9,108 +9,169 @@
   <!-- Materialize CSS -->
   <link href="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/css/materialize.min.css" rel="stylesheet" />
   <link href="https://cdn.datatables.net/1.13.6/css/jquery.dataTables.min.css" rel="stylesheet" />
-  <link href="styles.css" rel="stylesheet" />
+  <link href="https://cdn.jsdelivr.net/npm/nouislider@15.7.1/dist/nouislider.min.css" rel="stylesheet" />
+  <link href="css/styles.css" rel="stylesheet" />
 
   <!-- JavaScript libraries -->
   <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
   <script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/js-yaml@4.1.0/dist/js-yaml.min.js"></script>
+
   <script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/js/materialize.min.js"></script>
-  <script src="app.js" defer></script>
+  <script src="https://cdn.jsdelivr.net/npm/nouislider@15.7.1/dist/nouislider.min.js"></script>
+
+  <!-- Application modules -->
+  <script src="js/charts.js" defer></script>
+  <script src="js/table.js" defer></script>
+  <script src="js/export.js" defer></script>
+  <script src="js/data.js" defer></script>
+  <script src="js/citation.js" defer></script>
+  <script src="js/main.js" defer></script>
 </head>
 
 <body>
+
   <div class="container">
-    <header class="center-align section">
+
+    <!-- Header -->
+    <header class="center-align header-section">
       <h4 class="main-title teal-text text-darken-3">Large Language Models for Software Testing: A Research Roadmap</h4>
-      <div class="authors">
-        <span>
-          <b>Cristian Augusto</b><sup>2</sup>,
-          <b>Antonia Bertolino</b><sup>1</sup>,
-          <b>Guglielmo De Angelis</b><sup>3</sup>,
-          <b>Francesca Lonetti</b><sup>4</sup>,
-          <b>Jesús Morán</b><sup>2</sup>
-        </span>
-        <div class="mt-2">
-          <span><sup>1</sup>GSSI, Italy</span> &nbsp;
-          <span><sup>2</sup>University of Oviedo, Spain</span> &nbsp;
-          <span><sup>3</sup>IASI-CNR, Italy</span> &nbsp;
-          <span><sup>4</sup>ISTI-CNR, Italy</span>
-        </div>
-        <!-- Download system for data in multiple formats -->
-        <div class="mt-10">
-          <span class="title-label"><b>DOWNLOAD DATASET:</b></span>
-          <a id="download-csv" class="green-btn" download="Papers.csv">CSV</a>
-          <a id="download-json" class="green-btn" download="Papers.json">JSON</a>
-          <a id="download-xlsx" class="green-btn" download="Papers.xlsx">EXCEL</a>
-        </div>
-        <div class="mt-10">
-          <span class="title-label"><b>CITE US:</b></span>
-          <a id="show-citation" class="green-btn">
-            SHOW CITATION
-          </a>
-          <a id="download-bibtex" class="green-btn" download="Augusto2026.bib">
-            DOWNLOAD CITATION
-          </a>
-        </div>
+      <div class="authors-block">
+        <b>Cristian Augusto</b><sup>2</sup>,
+        <b>Antonia Bertolino</b><sup>1</sup>,
+        <b>Guglielmo De Angelis</b><sup>3</sup>,
+        <b>Francesca Lonetti</b><sup>4</sup>,
+        <b>Jesús Morán</b><sup>2</sup>
+      </div>
+      <div class="affiliations-block">
+        <sup>1</sup>GSSI, Italy &nbsp;&middot;&nbsp;
+        <sup>2</sup>University of Oviedo, Spain &nbsp;&middot;&nbsp;
+        <sup>3</sup>IASI-CNR, Italy &nbsp;&middot;&nbsp;
+        <sup>4</sup>ISTI-CNR, Italy
+      </div>
+      <div class="header-actions">
+        <span class="action-group-label">DATASET:</span>
+        <a id="download-csv" class="btn-small waves-effect waves-light teal" download="Papers.csv">CSV</a>
+        <a id="download-json" class="btn-small waves-effect waves-light teal" download="Papers.json">JSON</a>
+        <a id="download-xlsx" class="btn-small waves-effect waves-light teal" download="Papers.xlsx">EXCEL</a>
+        <span class="action-group-label action-separator">CITE US:</span>
+        <button id="show-citation" class="btn-small waves-effect waves-light teal">SHOW</button>
+        <a id="download-bibtex" class="btn-small waves-effect waves-light teal" download="Augusto2026.bib">BibTeX</a>
       </div>
     </header>
-    <!-- Acknowledgments -->
-    <section class="acks-section">
-      <p><b>Acknowledgments:</b> The work was partially supported by the European HORIZON-KDT-JU research project
-        MATISSE: "Model-based
-        engineering of Digital Twins for early verification and validation of Industrial Systems",
-        HORIZON-KDT-JU-2023-2-RIA,
-        Proposal number: 101140216-2, KDT232RIA_00017, in part by the project PID2022-137646OB-C32 under Grant MCIN/
-        AEI/10.13039/501100011033/FEDER, UE, and also by the (partial) support of the PNRR MUR project FAIR (PE0000013).
-      </p>
-    </section>
 
+    <!-- Acknowledgments -->
+    <div class="acks-block">
+      <p><b>Acknowledgments:</b> The work was partially supported by the European HORIZON-KDT-JU research project
+        MATISSE: "Model-based engineering of Digital Twins for early verification and validation of Industrial Systems",
+        HORIZON-KDT-JU-2023-2-RIA, Proposal number: 101140216-2, KDT232RIA_00017, in part by the project
+        PID2022-137646OB-C32 under Grant MCIN/AEI/10.13039/501100011033/FEDER, UE, and also by the (partial) support
+        of the PNRR MUR project FAIR (PE0000013).</p>
+    </div>
+
+    <div class="divider"></div>
+
+    <!-- Filter bar: corpus toggle + year slider + stats -->
+    <div class="filter-bar">
+      <div class="filter-bar-row">
+        <div class="filter-group">
+          <span class="filter-label">Corpus:</span>
+          <div class="btn-group" id="corpusToggle">
+            <a class="btn-small waves-effect corpus-btn active" data-corpus="all">All</a>
+            <a class="btn-small waves-effect corpus-btn" data-corpus="initial">Initial (P)</a>
+            <a class="btn-small waves-effect corpus-btn" data-corpus="validation">Validation (V)</a>
+          </div>
+        </div>
+        <div class="filter-group year-filter-group">
+          <span class="filter-label">Year:</span>
+          <span class="year-label" id="yearMinLabel">2020</span>
+          <div id="yearSlider" class="year-slider"></div>
+          <span class="year-label" id="yearMaxLabel">2026</span>
+        </div>
+        <div class="filter-group stats-group">
+          <div class="chip stat-chip stat-total"><b id="stat-total">0</b>&nbsp;Articles</div>
+          <div class="chip stat-chip stat-journals"><b id="stat-journals">0</b>&nbsp;Journals</div>
+          <div class="chip stat-chip stat-conferences"><b id="stat-conferences">0</b>&nbsp;Conferences</div>
+          <div class="chip stat-chip stat-arxiv"><b id="stat-arxiv">0</b>&nbsp;arXiv</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Bubble chart: Classification Dimensions by Research Trend -->
     <div class="row">
-      <div class="col s12 m12 l8">
+      <div class="col s12">
         <div class="card">
           <div class="card-content">
-            <span class="card-title"><b>Article List</b></span>
-            <!-- Article count selector -->
-            <div class="show-input-field" style="max-width: 200px">
-              <select id="pageLengthSelect">
-                <option value="5" selected>5 articles</option>
-                <option value="10">10 articles</option>
-                <option value="25">25 articles</option>
-                <option value="50">50 articles</option>
-                <option value="100">100 articles</option>
-                <option value="-1">All articles</option>
-              </select>
+            <span class="card-title card-title-sm">Testing Trends vs LLM Interaction, Contextual Info, Scope & Approach</span>
+            <div class="chart-container chart-container-lg"><canvas id="chart-bubble"></canvas></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Additional insights chart -->
+    <div class="row">
+      <div class="col s12">
+        <div class="card">
+          <div class="card-content">
+            <div class="row" style="margin-bottom:0">
+              <div class="col s12 m6">
+                <span class="card-title card-title-sm">Additional Insights</span>
+              </div>
+              <div class="col s12 m6">
+                <div class="input-field" style="margin-top:0">
+                  <select id="graficoSelect">
+                    <optgroup label="Publication">
+                      <option value="ano" selected>Articles per Year</option>
+                      <option value="conferences">Conferences</option>
+                      <option value="journals">Journals</option>
+                      <option value="contribution">Type of Contribution</option>
+                      <option value="database">Database Source</option>
+                    </optgroup>
+                    <optgroup label="Tooling & Evaluation">
+                      <option value="llmsused">LLMs Used</option>
+                      <option value="benchmarks">Benchmarks</option>
+                      <option value="metrics">Evaluation Metrics</option>
+                      <option value="tools">Tools</option>
+                    </optgroup>
+                  </select>
+                  <label for="graficoSelect">Chart type</label>
+                </div>
+              </div>
+            </div>
+            <div class="chart-container chart-container-lg"><canvas id="grafica"></canvas></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Article table -->
+    <div class="row">
+      <div class="col s12">
+        <div class="card">
+          <div class="card-content">
+            <div class="table-toolbar">
+              <span class="card-title card-title-sm" style="margin:0">Article List</span>
+              <div class="table-toolbar-right">
+                <button id="toggleFilters" class="btn-small waves-effect waves-light teal lighten-1" style="text-transform:none;height:28px;line-height:28px;padding:0 12px;font-size:0.78rem;border-radius:4px;">&#9660; Filters</button>
+                <label class="toolbar-label" for="pageLengthSelect">Show:</label>
+                <select id="pageLengthSelect" class="browser-default toolbar-select">
+                  <option value="5">5</option>
+                  <option value="10">10</option>
+                  <option value="25" selected>25</option>
+                  <option value="50">50</option>
+                  <option value="100">100</option>
+                  <option value="-1">All</option>
+                </select>
+              </div>
             </div>
             <table id="tabla" class="striped highlight responsive-table"></table>
           </div>
         </div>
       </div>
-      <div class="col s12 m12 l4">
-        <div class="card">
-          <div class="card-content">
-            <span class="card-title"><b>Data Insights</b></span>
-            <div class="input-field">
-              <select id="graficoSelect">
-                <option value="ano" selected>📅 Articles-Year</option>
-                <option value="llmsused">🤖 LLMs Used</option>
-                <option value="benchmarks">⏱️ Benchmarks Used</option>
-                <option value="metrics">📐 Metrics Used</option>
-                <option value="category">🗄️ Categories</option>
-                <option value="conferences">🎤 Conferences</option>
-                <option value="journals">📚 Journals</option>
-              </select>
-              <label for="graficoSelect">Select the type of Graph</label>
-            </div>
-            <div class="graph-wrapper">
-              <canvas id="grafica"></canvas>
-            </div>
-          </div>
-        </div>
-      </div>
     </div>
+
   </div>
 
   <!-- Modal for abstract -->
@@ -121,6 +182,19 @@
     </div>
     <div class="modal-footer">
       <a href="#!" class="modal-close waves-effect waves-green btn-flat">Close</a>
+    </div>
+  </div>
+
+  <!-- BibTeX Modal -->
+  <div id="modal-bibtex" class="modal">
+    <div class="modal-content">
+      <h5 id="modal-bibtex-title">BibTeX</h5>
+      <pre id="modal-bibtex-content" style="white-space:pre-wrap;font-size:0.85rem;font-family:Consolas,'Liberation Mono',monospace;background:#f5f5f5;padding:12px;border:1px solid #ddd;border-radius:4px;"></pre>
+    </div>
+    <div class="modal-footer">
+      <a href="#!" class="modal-close waves-effect waves-green btn-flat">Close</a>
+      <a href="#" id="copy-bibtex" class="waves-effect waves-teal btn-flat">Copy</a>
+      <a href="#" id="download-bibtex-modal" class="waves-effect waves-teal btn-flat" download="citation.bib">Download</a>
     </div>
   </div>
 
