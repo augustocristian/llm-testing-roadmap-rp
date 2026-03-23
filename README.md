@@ -4,18 +4,23 @@
 This repository contains the replication package of the paper *Large Language Models for Software Testing: A Research Roadmap*
 published at *TO-DO*
 
-This replication package includes the raw data from the articles analyzed in the roadmap and an [interactive view of them hosted on GitHub Pages](https://giis-uniovi.github.io/llm-testing-roadmap-rp/). The raw dataset is a CSV file available in the [/data](/data) directory, with a structure (columns) as follows:
-- **Id:** Internal reference used in the study.
+This replication package includes the raw data from the articles analyzed in the roadmap and an [interactive view of them hosted on GitHub Pages](https://giis-uniovi.github.io/llm-testing-roadmap-rp/). The raw dataset is a semicolon-separated CSV file available in the [/data](/data) directory, with a structure (columns) as follows:
+- **ID:** Internal reference used in the study.
 - **Title:** Title of the article.
 - **Year:** Publication year or when it was made available on arXiv.
 - **Key:** BibTeX key.
-- **Published into:** Name of the journal or conference where it is published.
+- **Published into:** Name of the journal or conference where it is published (prefixed with `C:` for conferences or `J:` for journals).
 - **Publication type:** Type of publication: Conference, Journal, or arXiv.
 - **Bibtex:** BibTeX entry of the publication.
-- **Type of work:** Type of contribution: Survey, Comparison, and Research Contribution.
+- **Database:** Source database: ACM, IEEE, Elsevier, Springer, or Orig.
+- **Type of Contribution:** Type of contribution: survey, evaluation, or research contribution.
 - **Abstract:** Short abstract retrieved from the article.
-- **Category:** Type of LLM-based testing: Unit Test Generation, High-Level Test Generation, Oracle Generation, Test Augmentation or Improvement, Non-Functional Testing, and Test Agents.
-- **LLM-Approach:** Type of LLM approach: LLM-Pure Prompting, Hybrid Prompting, LLM-Pure Fine-tune, and Hybrid Fine-tune.
+- **Trend:** Type of LLM-based testing: Unit Test Generation, High-Level Test Gen, Oracle Generation, Test Augmentation or Improvement, Test Configuration, and Reflections.
+- **LLM Interaction:** Type of LLM interaction: Pure Prompting or Hybrid Prompting.
+- **Contextual Info:** How the LLM is augmented: Alone, RAG, or Fine-Tune.
+- **Approach:** Type of approach: Tool/Approach or Agent.
+- **Scope:** Testing scope: Functional or Non-Functional.
+- **Docus:** Additional documentation references.
 - **Benchmark:** Name or identifier of the benchmark used.
 - **LLMs Used:** Name of the model/models used in the article.
 - **Evaluation Metric:** Name of the metrics used in evaluating the article.
