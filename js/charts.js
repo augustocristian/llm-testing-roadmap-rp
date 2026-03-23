@@ -53,19 +53,29 @@ function renderPieChart(canvasId, labels, data) {
 }
 
 // ── Venue stacked bar (year × conference/journal/arXiv) ──
-function renderVenueChart(canvasId, years, datasets) {
+function renderVenueChart(canvasId, years, datasets, venueGroups) {
     destroyChart(canvasId);
-    chartInstances[canvasId] = new Chart(getCanvas(canvasId), {
+
+    // Build grouped HTML legend container
+    const canvas = getCanvas(canvasId);
+    const wrapper = canvas.parentElement;
+    let legendEl = wrapper.querySelector(".venue-legend");
+    if (!legendEl) {
+        legendEl = document.createElement("div");
+        legendEl.className = "venue-legend";
+        wrapper.style.display = "flex";
+        wrapper.style.alignItems = "flex-start";
+        wrapper.appendChild(legendEl);
+    }
+
+    chartInstances[canvasId] = new Chart(canvas, {
         type: "bar",
         data: { labels: years, datasets },
         options: {
             responsive: true,
             maintainAspectRatio: false,
             plugins: {
-                legend: {
-                    position: "right",
-                    labels: { font: { size: 10 }, boxWidth: 12, padding: 6 },
-                },
+                legend: { display: false },
                 tooltip: { mode: "nearest", intersect: true },
             },
             scales: {
@@ -97,6 +107,34 @@ function renderVenueChart(canvasId, years, datasets) {
                 ctx.restore();
             },
         }],
+    });
+
+    // Render grouped legend
+    let html = "";
+    let idx = 0;
+    (venueGroups || []).forEach((group) => {
+        if (group.count === 0) return;
+        html += `<div style="font-weight:bold;font-size:11px;margin:6px 0 2px;color:#333;">${group.title}</div>`;
+        for (let i = 0; i < group.count; i++) {
+            const ds = datasets[idx + i];
+            html += `<div style="display:flex;align-items:center;gap:4px;font-size:10px;padding:1px 0;cursor:pointer;" data-dsi="${idx + i}">` +
+                `<span style="display:inline-block;width:12px;height:12px;background:${ds.backgroundColor};border-radius:2px;flex-shrink:0;"></span>` +
+                `<span>${ds.label}</span></div>`;
+        }
+        idx += group.count;
+    });
+    legendEl.innerHTML = html;
+    legendEl.style.cssText = "min-width:130px;max-height:400px;overflow-y:auto;padding-left:10px;";
+
+    // Click to toggle dataset visibility
+    legendEl.querySelectorAll("[data-dsi]").forEach((el) => {
+        el.addEventListener("click", () => {
+            const di = parseInt(el.dataset.dsi);
+            const meta = chartInstances[canvasId].getDatasetMeta(di);
+            meta.hidden = !meta.hidden;
+            el.style.opacity = meta.hidden ? "0.35" : "1";
+            chartInstances[canvasId].update();
+        });
     });
 }
 

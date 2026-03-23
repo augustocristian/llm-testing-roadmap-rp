@@ -182,12 +182,34 @@ function renderInsightsChart(data, chartKey) {
             });
 
             const total = (v) => Object.values(venues[v]).reduce((s, n) => s + n, 0);
-            const confVenues = Object.keys(venues).filter((v) => venueType[v] === "conf").sort((a, b) => total(b) - total(a));
-            const jourVenues = Object.keys(venues).filter((v) => venueType[v] === "jour").sort((a, b) => total(b) - total(a));
+            const confAll = Object.keys(venues).filter((v) => venueType[v] === "conf").sort((a, b) => total(b) - total(a));
+            const jourAll = Object.keys(venues).filter((v) => venueType[v] === "jour").sort((a, b) => total(b) - total(a));
             const arxivVenues = Object.keys(venues).filter((v) => venueType[v] === "arxiv");
+
+            // Group conferences beyond top 14 into "Other Conf."
+            const TOP_CONF = 14, TOP_JOUR = 7;
+            const confVenues = confAll.slice(0, TOP_CONF);
+            if (confAll.length > TOP_CONF) {
+                venues["Other Conf."] = {};
+                confAll.slice(TOP_CONF).forEach((v) => {
+                    years.forEach((y) => { venues["Other Conf."][y] = (venues["Other Conf."][y] || 0) + (venues[v][y] || 0); });
+                });
+                confVenues.unshift("Other Conf.");
+                venueType["Other Conf."] = "conf";
+            }
+            // Group journals beyond top 7 into "Other Jour."
+            const jourVenues = jourAll.slice(0, TOP_JOUR);
+            if (jourAll.length > TOP_JOUR) {
+                venues["Other Jour."] = {};
+                jourAll.slice(TOP_JOUR).forEach((v) => {
+                    years.forEach((y) => { venues["Other Jour."][y] = (venues["Other Jour."][y] || 0) + (venues[v][y] || 0); });
+                });
+                jourVenues.unshift("Other Jour.");
+                venueType["Other Jour."] = "jour";
+            }
             const stackOrder = [...confVenues, ...jourVenues, ...arxivVenues];
 
-            const CONF_PAL = ["#115740", "#046A38", "#00843D", "#00B140", "#6CC24A", "#A4D65E", "#C8DFA4"];
+            const CONF_PAL = ["#115740", "#046A38", "#00843D", "#00B140", "#6CC24A", "#A4D65E", "#C8DFA4", "#2E7D32", "#4CAF50", "#66BB6A", "#81C784", "#A5D6A7", "#C8E6C9", "#388E3C"];
             const JOUR_PAL = ["#00205B", "#0032A0", "#003DA5", "#00A3E0", "#41B6E6", "#71C5E8", "#A8D5E8"];
             const colorMap = {};
             confVenues.forEach((v, i) => { colorMap[v] = CONF_PAL[i % CONF_PAL.length]; });
@@ -201,7 +223,12 @@ function renderInsightsChart(data, chartKey) {
                 borderColor: "white",
                 borderWidth: 0.6,
             }));
-            renderVenueChart(cid, years, datasets);
+            const venueGroups = [
+                { title: "Conferences", count: confVenues.length },
+                { title: "Journals", count: jourVenues.length },
+                { title: "Preprints", count: arxivVenues.length },
+            ];
+            renderVenueChart(cid, years, datasets, venueGroups);
             break;
         }
         case "llmsused":
@@ -228,7 +255,11 @@ function renderInsightsChart(data, chartKey) {
                 const v = (r["PUBLISHED INTO"] || "").trim();
                 if (v.startsWith("C:")) { const k = v.replace(/^C:\s*/, ""); cc[k] = (cc[k] || 0) + 1; }
             });
-            renderPieChart(cid, Object.keys(cc), Object.values(cc));
+            const ccSorted = Object.entries(cc).sort((a, b) => b[1] - a[1]);
+            const ccTop = ccSorted.slice(0, 14);
+            const ccOthers = ccSorted.slice(14).reduce((s, e) => s + e[1], 0);
+            if (ccOthers > 0) ccTop.push(["Others", ccOthers]);
+            renderPieChart(cid, ccTop.map(([k]) => k), ccTop.map(([, v]) => v));
             break;
         }
         case "journals": {
@@ -237,7 +268,11 @@ function renderInsightsChart(data, chartKey) {
                 const v = (r["PUBLISHED INTO"] || "").trim();
                 if (v.startsWith("J:")) { const k = v.replace(/^J:\s*/, ""); jc[k] = (jc[k] || 0) + 1; }
             });
-            renderPieChart(cid, Object.keys(jc), Object.values(jc));
+            const jcSorted = Object.entries(jc).sort((a, b) => b[1] - a[1]);
+            const jcTop = jcSorted.slice(0, 7);
+            const jcOthers = jcSorted.slice(7).reduce((s, e) => s + e[1], 0);
+            if (jcOthers > 0) jcTop.push(["Others", jcOthers]);
+            renderPieChart(cid, jcTop.map(([k]) => k), jcTop.map(([, v]) => v));
             break;
         }
     }

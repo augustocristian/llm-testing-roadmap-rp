@@ -23,18 +23,32 @@ const CHIP_COLORS = {
     "TOOL":                 { bg: "#efebe9", fg: "#4e342e" },
     "TYPE OF CONTRIBUTION": { bg: "#f1f8e9", fg: "#33691e" },
     "PUBLICATION TYPE":     null,
+    "YEAR":                 null,
+    "PUBLISHED INTO":       null,
 };
 
-function showAbstract(title, abstract) {
+function showAbstract(title, authors, venue, abstract, url) {
     document.getElementById("modal-abstract-title").textContent = title;
+    document.getElementById("modal-abstract-authors").textContent = authors;
+    document.getElementById("modal-abstract-venue").textContent = venue;
     document.getElementById("modal-abstract-content").textContent = abstract;
+    const linkBtn = document.getElementById("modal-abstract-link");
+    if (url) {
+        linkBtn.href = url;
+        linkBtn.style.display = "";
+    } else {
+        linkBtn.style.display = "none";
+    }
     M.Modal.getInstance(document.getElementById("modal-abstract")).open();
 }
 
 function showAbstractFromAttr(el) {
     showAbstract(
         decodeURIComponent(el.getAttribute("data-title") || ""),
-        decodeURIComponent(el.getAttribute("data-abstract") || "")
+        decodeURIComponent(el.getAttribute("data-authors") || ""),
+        decodeURIComponent(el.getAttribute("data-venue") || ""),
+        decodeURIComponent(el.getAttribute("data-abstract") || ""),
+        decodeURIComponent(el.getAttribute("data-url") || "")
     );
 }
 
@@ -86,6 +100,49 @@ const TREND_COLORS = {
     "Test Augmentation or Improvement": { bg: "#ede7f6", fg: "#4527a0" },
     "Test Configuration":               { bg: "#e0f7fa", fg: "#006064" },
 };
+const YEAR_COLORS = {
+    "2020": { bg: "#fce4ec", fg: "#ad1457" },
+    "2021": { bg: "#fff3e0", fg: "#e65100" },
+    "2022": { bg: "#fff9c4", fg: "#f57f17" },
+    "2023": { bg: "#e8f5e9", fg: "#1b5e20" },
+    "2024": { bg: "#e3f2fd", fg: "#0d47a1" },
+    "2025": { bg: "#ede7f6", fg: "#4527a0" },
+    "2026": { bg: "#e0f7fa", fg: "#006064" },
+};
+const VENUE_COLORS = {
+    "ICSE":              { bg: "#e3f2fd", fg: "#0d47a1" },
+    "FSE":               { bg: "#e8f5e9", fg: "#1b5e20" },
+    "ISSTA":             { bg: "#fff3e0", fg: "#e65100" },
+    "ASE":               { bg: "#fce4ec", fg: "#ad1457" },
+    "ICST":              { bg: "#ede7f6", fg: "#4527a0" },
+    "AST":               { bg: "#e0f7fa", fg: "#006064" },
+    "ISSRE":             { bg: "#fff9c4", fg: "#f57f17" },
+    "SANER":             { bg: "#f3e5f5", fg: "#6a1b9a" },
+    "SIGSOFT":           { bg: "#e8eaf6", fg: "#283593" },
+    "EASE":              { bg: "#efebe9", fg: "#4e342e" },
+    "ICTSS":             { bg: "#e0f2f1", fg: "#004d40" },
+    "ICCMT":             { bg: "#fbe9e7", fg: "#bf360c" },
+    "ICDDS":             { bg: "#f1f8e9", fg: "#33691e" },
+    "A-TEST":            { bg: "#e1f5fe", fg: "#01579b" },
+    "AITEST":            { bg: "#fff8e1", fg: "#ff6f00" },
+    "QRS":               { bg: "#fce4ec", fg: "#880e4f" },
+    "QUATIC":            { bg: "#e8eaf6", fg: "#1a237e" },
+    "RE":                { bg: "#f9fbe7", fg: "#827717" },
+    "TSE":               { bg: "#e3f2fd", fg: "#1565c0" },
+    "TOSEM":             { bg: "#e8f5e9", fg: "#2e7d32" },
+    "IST":               { bg: "#fff3e0", fg: "#ef6c00" },
+    "JSS":               { bg: "#ede7f6", fg: "#6a1b9a" },
+    "Emp. Soft. Eng.":   { bg: "#fce4ec", fg: "#c62828" },
+    "IEEE Access":       { bg: "#e0f7fa", fg: "#00695c" },
+    "IEEE Soft.":        { bg: "#e1f5fe", fg: "#0277bd" },
+    "ACM Soft. Eng.":    { bg: "#f3e5f5", fg: "#7b1fa2" },
+    "Proc. ACM Softw. Eng": { bg: "#e8eaf6", fg: "#303f9f" },
+    "Aut. Soft. Eng":    { bg: "#fff8e1", fg: "#f9a825" },
+    "Com. ACM":          { bg: "#efebe9", fg: "#3e2723" },
+    "Comp. Std. and Int.": { bg: "#f1f8e9", fg: "#558b2f" },
+    "arXiv":             { bg: "#ffcdd2", fg: "#b71c1c" },
+    "Other":             { bg: "#eceff1", fg: "#37474f" },
+};
 
 const PER_VALUE_MAPS = {
     "PUBLICATION TYPE": PUB_TYPE_COLORS,
@@ -95,6 +152,8 @@ const PER_VALUE_MAPS = {
     "APPROACH":         APPROACH_COLORS,
     "SCOPE":            SCOPE_COLORS,
     "FOCUS":            FOCUS_COLORS,
+    "YEAR":             YEAR_COLORS,
+    "PUBLISHED INTO":   VENUE_COLORS,
 };
 
 function chipHtml(val, colName) {
@@ -150,7 +209,7 @@ function initDataTable(data, headers) {
     });
 
     // Chip column defs
-    const allChipCols = [...MULTI_VALUE_COLS, "PUBLICATION TYPE"];
+    const allChipCols = [...MULTI_VALUE_COLS, "PUBLICATION TYPE", "YEAR", "PUBLISHED INTO"];
     const MAX_VISIBLE_CHIPS = 2;
     const chipDefs = allChipCols
         .filter((col) => visibleHeaders.includes(col))
@@ -158,7 +217,9 @@ function initDataTable(data, headers) {
             targets: visibleHeaders.indexOf(col),
             render: (cellData, type) => {
                 if (type !== "display" || !cellData) return cellData || "";
-                const vals = cellData.split(",").map((v) => v.trim()).filter(Boolean);
+                let raw = cellData;
+                if (col === "PUBLISHED INTO") raw = raw.replace(/^[CJ]:\s*/, "");
+                const vals = raw.split(",").map((v) => v.trim()).filter(Boolean);
                 if (vals.length <= MAX_VISIBLE_CHIPS) {
                     return vals.map((v) => chipHtml(v, col)).join(" ");
                 }
@@ -187,10 +248,6 @@ function initDataTable(data, headers) {
                 },
             },
             {
-                targets: visibleHeaders.indexOf("PUBLISHED INTO"),
-                render: (cellData) => cellData.replace(/^[CJ]:\s*/, ""),
-            },
-            {
                 targets: visibleHeaders.indexOf("BIBTEX"),
                 orderable: false,
                 render: (cellData, type) => {
@@ -204,8 +261,28 @@ function initDataTable(data, headers) {
                 orderable: false,
                 render: (cellData, type, row) => {
                     if (type !== "display" || !cellData) return cellData || "";
+                    const bibtex = row[visibleHeaders.indexOf("BIBTEX")] || "";
+                    const authMatch = bibtex.match(/author\s*=\s*[{"]([^}"]+)[}"]/i);
+                    const authors = authMatch ? authMatch[1].replace(/\s+/g, " ").trim() : "";
+                    const pubRaw = (row[visibleHeaders.indexOf("PUBLISHED INTO")] || "").trim();
+                    const acronym = pubRaw.replace(/^[CJ]:\s*/, "");
+                    const pubType = (row[visibleHeaders.indexOf("PUBLICATION TYPE")] || "").trim();
+                    let venue = acronym;
+                    if (pubType === "arXiv") {
+                        venue = "arXiv";
+                    } else {
+                        const btMatch = bibtex.match(/booktitle\s*=\s*[{"]([^}"]+)[}"]/i);
+                        const jnMatch = bibtex.match(/journal\s*=\s*[{"]([^}"]+)[}"]/i);
+                        const longName = btMatch ? btMatch[1].trim() : (jnMatch ? jnMatch[1].trim() : "");
+                        if (longName) venue = longName + " (" + acronym + ")";
+                    }
+                    const urlMatch = bibtex.match(/url\s*=\s*[{"]([^}"]+)[}"]/i);
+                    const paperUrl = urlMatch ? urlMatch[1].trim() : "";
                     return `<a class="green-btn" href="#modal-abstract"
                         data-title="${encodeURIComponent(row[visibleHeaders.indexOf("TITLE")] || "")}"
+                        data-authors="${encodeURIComponent(authors)}"
+                        data-venue="${encodeURIComponent(venue)}"
+                        data-url="${encodeURIComponent(paperUrl)}"
                         data-abstract="${encodeURIComponent(cellData)}"
                         onclick="showAbstractFromAttr(this)">INFO</a>`;
                 },

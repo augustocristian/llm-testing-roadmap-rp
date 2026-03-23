@@ -20,6 +20,7 @@
 
   <script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/js/materialize.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/nouislider@15.7.1/dist/nouislider.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/js-yaml@4.1.0/dist/js-yaml.min.js"></script>
 
   <!-- Application modules -->
   <script src="js/charts.js" defer></script>
@@ -177,10 +178,14 @@
   <!-- Modal for abstract -->
   <div id="modal-abstract" class="modal">
     <div class="modal-content">
-      <h5 id="modal-abstract-title"></h5>
+      <h4 id="modal-abstract-title"></h4>
+      <h6 id="modal-abstract-authors" style="color:#555;margin-top:-0.3rem;"></h6>
+      <p id="modal-abstract-venue" style="font-style:italic;color:#555;"></p>
+      <h6 style="margin-top:1.2rem;font-weight:600;">Abstract</h6>
       <p id="modal-abstract-content"></p>
     </div>
     <div class="modal-footer">
+      <a id="modal-abstract-link" href="#" target="_blank" class="waves-effect waves-green btn-flat" style="display:none;">Published version</a>
       <a href="#!" class="modal-close waves-effect waves-green btn-flat">Close</a>
     </div>
   </div>
