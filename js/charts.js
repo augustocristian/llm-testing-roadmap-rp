@@ -6,6 +6,16 @@ function destroyChart(canvasId) {
         chartInstances[canvasId].destroy();
         delete chartInstances[canvasId];
     }
+    // Remove custom HTML legend if present
+    const canvas = document.getElementById(canvasId);
+    if (canvas) {
+        const wrapper = canvas.parentElement;
+        const legend = wrapper.querySelector(".venue-legend");
+        if (legend) {
+            legend.remove();
+            wrapper.style.display = "";
+        }
+    }
 }
 
 function getCanvas(canvasId) {
@@ -19,7 +29,8 @@ function generateColors(count, lightness = 65) {
 // ── Bar chart ──
 function renderBarChart(canvasId, labels, data, label, options = {}) {
     destroyChart(canvasId);
-    chartInstances[canvasId] = new Chart(getCanvas(canvasId), {
+    const canvas = getCanvas(canvasId);
+    chartInstances[canvasId] = new Chart(canvas, {
         type: "bar",
         data: {
             labels,
@@ -30,7 +41,42 @@ function renderBarChart(canvasId, labels, data, label, options = {}) {
             maintainAspectRatio: false,
             plugins: { legend: { display: false } },
             scales: { y: { title: { display: true, text: "No. Articles" } } },
+            onClick: (evt, elems) => {
+                if (elems.length > 0) {
+                    const idx = elems[0].index;
+                    chartClickFilter(label, labels[idx]);
+                }
+            },
             ...options,
+        },
+    });
+}
+
+// ── LLM usage timeline heatmap (bar chart fallback) ──
+function renderLLMHeatmap(canvasId, years, llms, counts) {
+    destroyChart(canvasId);
+    const colors = generateColors(llms.length);
+    const datasets = llms.map((llm, i) => ({
+        label: llm,
+        data: years.map((y) => counts[llm]?.[y] || 0),
+        backgroundColor: colors[i],
+        borderColor: "white",
+        borderWidth: 0.5,
+    }));
+    chartInstances[canvasId] = new Chart(getCanvas(canvasId), {
+        type: "bar",
+        data: { labels: years, datasets },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: { position: "right", labels: { font: { size: 10 }, boxWidth: 12, padding: 5 } },
+                tooltip: { mode: "nearest", intersect: true },
+            },
+            scales: {
+                x: { stacked: true, title: { display: true, text: "Year" } },
+                y: { stacked: true, beginAtZero: true, title: { display: true, text: "No. Papers" } },
+            },
         },
     });
 }
@@ -48,8 +94,54 @@ function renderPieChart(canvasId, labels, data) {
             responsive: true,
             maintainAspectRatio: false,
             plugins: { legend: { position: "right", labels: { font: { size: 11 } } } },
+            onClick: (evt, elems) => {
+                if (elems.length > 0) {
+                    const idx = elems[0].index;
+                    chartClickFilter("", labels[idx]);
+                }
+            },
         },
     });
+}
+
+// ── Line chart (for trends over time) ──
+function renderLineChart(canvasId, labels, datasets, title) {
+    destroyChart(canvasId);
+    chartInstances[canvasId] = new Chart(getCanvas(canvasId), {
+        type: "line",
+        data: { labels, datasets },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: { position: "right", labels: { font: { size: 11 }, boxWidth: 14, padding: 8 } },
+                tooltip: { mode: "index", intersect: false },
+            },
+            interaction: { mode: "nearest", axis: "x", intersect: false },
+            scales: {
+                x: { title: { display: true, text: "Year" } },
+                y: { beginAtZero: true, title: { display: true, text: "No. Articles" } },
+            },
+        },
+    });
+}
+
+// ── Cross-linking: scroll to table and apply filter ──
+function chartClickFilter(field, value) {
+    // Scroll to table section
+    const tableSection = document.getElementById("section-table");
+    if (tableSection) tableSection.scrollIntoView({ behavior: "smooth", block: "start" });
+    // Apply filter via DataTable search
+    if (typeof dataTableInstance !== "undefined" && dataTableInstance) {
+        dataTableInstance.search(value).draw();
+        // Flash the search box to indicate
+        const searchInput = document.querySelector(".dataTables_filter input");
+        if (searchInput) {
+            searchInput.value = value;
+            searchInput.style.background = "#e0f2f1";
+            setTimeout(() => { searchInput.style.background = ""; }, 1200);
+        }
+    }
 }
 
 // ── Venue stacked bar (year × conference/journal/arXiv) ──

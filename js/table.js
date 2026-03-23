@@ -27,7 +27,7 @@ const CHIP_COLORS = {
     "PUBLISHED INTO":       null,
 };
 
-function showAbstract(title, authors, venue, abstract, url) {
+function showAbstract(title, authors, venue, abstract, url, trends) {
     document.getElementById("modal-abstract-title").textContent = title;
     document.getElementById("modal-abstract-authors").textContent = authors;
     document.getElementById("modal-abstract-venue").textContent = venue;
@@ -39,6 +39,51 @@ function showAbstract(title, authors, venue, abstract, url) {
     } else {
         linkBtn.style.display = "none";
     }
+    // Related papers
+    const relatedDiv = document.getElementById("modal-related-papers");
+    const relatedList = document.getElementById("modal-related-list");
+    relatedList.innerHTML = "";
+    if (window._allData && trends) {
+        const paperTrends = trends.split(",").map((s) => s.trim()).filter(Boolean);
+        if (paperTrends.length > 0) {
+            const related = window._allData
+                .filter((r) => {
+                    if ((r.TITLE || "").trim() === title.trim()) return false;
+                    const rTrends = (r.TREND || "").split(",").map((s) => s.trim());
+                    return paperTrends.some((t) => rTrends.includes(t));
+                })
+                .slice(0, 8);
+            if (related.length > 0) {
+                related.forEach((r) => {
+                    const li = document.createElement("li");
+                    const bibtex = r.BIBTEX || "";
+                    const paperUrl = (bibtex.match(/url\s*=\s*[{"]([^}"]+)[}"]/i) || [])[1] || "";
+                    const rTitle = r.TITLE || "";
+                    const sharedTrends = (r.TREND || "").split(",").map((s) => s.trim())
+                        .filter((t) => paperTrends.includes(t));
+                    if (paperUrl) {
+                        li.innerHTML = `<a href="${paperUrl}" target="_blank" style="color:#00796b;">${rTitle}</a>`;
+                    } else {
+                        li.textContent = rTitle;
+                    }
+                    sharedTrends.forEach((t) => {
+                        const chip = document.createElement("span");
+                        chip.className = "related-chip";
+                        chip.textContent = t;
+                        li.appendChild(chip);
+                    });
+                    relatedList.appendChild(li);
+                });
+                relatedDiv.style.display = "";
+            } else {
+                relatedDiv.style.display = "none";
+            }
+        } else {
+            relatedDiv.style.display = "none";
+        }
+    } else {
+        relatedDiv.style.display = "none";
+    }
     M.Modal.getInstance(document.getElementById("modal-abstract")).open();
 }
 
@@ -48,7 +93,8 @@ function showAbstractFromAttr(el) {
         decodeURIComponent(el.getAttribute("data-authors") || ""),
         decodeURIComponent(el.getAttribute("data-venue") || ""),
         decodeURIComponent(el.getAttribute("data-abstract") || ""),
-        decodeURIComponent(el.getAttribute("data-url") || "")
+        decodeURIComponent(el.getAttribute("data-url") || ""),
+        decodeURIComponent(el.getAttribute("data-trends") || "")
     );
 }
 
@@ -244,7 +290,12 @@ function initDataTable(data, headers) {
                     if (type !== "display") return cellData;
                     const bibtex = row[visibleHeaders.indexOf("BIBTEX")] || "";
                     const url = bibtex.match(/url\s*=\s*[{"]([^}"]+)[}"]/i)?.[1];
-                    return url ? `<a href="${url}" target="_blank">${cellData}</a>` : cellData;
+                    const rl = window._readingList || new Set();
+                    const starred = rl.has(cellData) ? "starred" : "";
+                    const starChar = starred ? "\u2605" : "\u2606";
+                    const star = `<button class="star-btn ${starred}" data-title="${cellData.replace(/"/g, '&quot;')}" title="Add to reading list">${starChar}</button> `;
+                    const link = url ? `<a href="${url}" target="_blank">${cellData}</a>` : cellData;
+                    return star + link;
                 },
             },
             {
@@ -278,11 +329,13 @@ function initDataTable(data, headers) {
                     }
                     const urlMatch = bibtex.match(/url\s*=\s*[{"]([^}"]+)[}"]/i);
                     const paperUrl = urlMatch ? urlMatch[1].trim() : "";
+                    const trends = row[visibleHeaders.indexOf("TREND")] || "";
                     return `<a class="green-btn" href="#modal-abstract"
                         data-title="${encodeURIComponent(row[visibleHeaders.indexOf("TITLE")] || "")}"
                         data-authors="${encodeURIComponent(authors)}"
                         data-venue="${encodeURIComponent(venue)}"
                         data-url="${encodeURIComponent(paperUrl)}"
+                        data-trends="${encodeURIComponent(trends)}"
                         data-abstract="${encodeURIComponent(cellData)}"
                         onclick="showAbstractFromAttr(this)">INFO</a>`;
                 },

@@ -151,6 +151,12 @@ function renderBubbleDashboard(data) {
 function renderInsightsChart(data, chartKey) {
     const cid = "grafica";
 
+    // Ensure canvas visible, hide HTML fallback (word cloud / coauthor reset)
+    const canvasEl = document.getElementById(cid);
+    const htmlDiv = document.getElementById("grafica-html");
+    if (canvasEl) canvasEl.style.display = "";
+    if (htmlDiv) { htmlDiv.style.display = "none"; htmlDiv.innerHTML = ""; }
+
     switch (chartKey) {
         case "ano": {
             const years = [...new Set(data.map((r) => r.YEAR).filter(Boolean))].sort();
@@ -231,6 +237,34 @@ function renderInsightsChart(data, chartKey) {
             renderVenueChart(cid, years, datasets, venueGroups);
             break;
         }
+        case "trend_time": {
+            const ttYears = [...new Set(data.map((r) => r.YEAR).filter(Boolean))].sort();
+            const TREND_ORDER_TT = [
+                "Unit Test Generation", "High-Level Test Gen", "Oracle Generation",
+                "Reflections", "Test Augmentation or Improvement", "Test Configuration",
+            ];
+            const TREND_PAL = ["#0d47a1", "#1b5e20", "#e65100", "#ad1457", "#4527a0", "#006064"];
+            const ttCounts = {};
+            TREND_ORDER_TT.forEach((t) => { ttCounts[t] = {}; });
+            data.forEach((r) => {
+                if (!r.YEAR || !r.TREND) return;
+                r.TREND.split(",").map((s) => s.trim()).filter((t) => TREND_ORDER_TT.includes(t)).forEach((t) => {
+                    ttCounts[t][r.YEAR] = (ttCounts[t][r.YEAR] || 0) + 1;
+                });
+            });
+            const ttDatasets = TREND_ORDER_TT.map((trend, i) => ({
+                label: trend,
+                data: ttYears.map((y) => ttCounts[trend][y] || 0),
+                borderColor: TREND_PAL[i],
+                backgroundColor: TREND_PAL[i] + "33",
+                fill: true,
+                tension: 0.3,
+                pointRadius: 4,
+                pointHoverRadius: 6,
+            }));
+            renderLineChart(cid, ttYears, ttDatasets, "Trends over Time");
+            break;
+        }
         case "llmsused":
             renderBarFromCount(cid, data, "LLMs USED", "LLMs Used", ["n/s", "none"]);
             break;
@@ -243,6 +277,22 @@ function renderInsightsChart(data, chartKey) {
         case "tools":
             renderBarFromCount(cid, data, "TOOL", "Tools", ["-", "none", "n/s"]);
             break;
+        case "llm_timeline": {
+            const ltYears = [...new Set(data.map((r) => r.YEAR).filter(Boolean))].sort();
+            const ltCounts = {};
+            data.forEach((r) => {
+                if (!r.YEAR || !r["LLMs USED"]) return;
+                r["LLMs USED"].split(",").map((s) => s.trim()).filter((v) => v && !["n/s", "none"].includes(v.toLowerCase())).forEach((llm) => {
+                    ltCounts[llm] ??= {};
+                    ltCounts[llm][r.YEAR] = (ltCounts[llm][r.YEAR] || 0) + 1;
+                });
+            });
+            const ltTotals = Object.entries(ltCounts).map(([llm, yc]) => [llm, Object.values(yc).reduce((a, b) => a + b, 0)]);
+            ltTotals.sort((a, b) => b[1] - a[1]);
+            const topLLMs = ltTotals.slice(0, 15).map(([l]) => l);
+            renderLLMHeatmap(cid, ltYears, topLLMs, ltCounts);
+            break;
+        }
         case "contribution":
             renderPieFromCount(cid, data, "TYPE OF CONTRIBUTION");
             break;
@@ -275,7 +325,154 @@ function renderInsightsChart(data, chartKey) {
             renderPieChart(cid, jcTop.map(([k]) => k), jcTop.map(([, v]) => v));
             break;
         }
+        case "wordcloud": {
+            renderWordCloud(data);
+            break;
+        }
+        case "coauthors": {
+            renderCoauthorTable(data);
+            break;
+        }
+        case "trend_matrix": {
+            renderTrendMatrix(data);
+            break;
+        }
     }
+}
+
+// ── Word cloud (HTML-based) ──
+function renderWordCloud(data) {
+    const canvas = document.getElementById("grafica");
+    const htmlDiv = document.getElementById("grafica-html");
+    canvas.style.display = "none";
+    htmlDiv.style.display = "";
+    destroyChart("grafica");
+
+    const STOP = new Set(["the","a","an","of","in","to","and","for","is","are","was","were","be","been",
+        "with","that","this","on","by","from","as","at","or","not","it","we","our","can","has","have",
+        "which","their","its","such","these","than","also","but","more","into","each","using","used",
+        "based","between","both","other","about","all","over","may","one","two","new","they","when",
+        "how","do","does","did","no","if","will","would","could","should","most","only","then","them",
+        "where","what","who","so","up","out","some","through","while","after","before","i","ii","e","g",
+        "et","al","ie","eg","vs","per","via"]);
+    const words = {};
+    data.forEach((r) => {
+        const text = (r.ABSTRACT || "") + " " + (r.TITLE || "");
+        text.toLowerCase().replace(/[^a-z]/g, " ").split(/\s+/).forEach((w) => {
+            if (w.length > 2 && !STOP.has(w)) words[w] = (words[w] || 0) + 1;
+        });
+    });
+    const sorted = Object.entries(words).sort((a, b) => b[1] - a[1]).slice(0, 120);
+    const maxF = sorted[0]?.[1] || 1;
+    const colors = ["#00796b","#0d47a1","#ad1457","#e65100","#4527a0","#1b5e20","#006064","#bf360c","#283593","#c62828"];
+
+    let html = '<div style="text-align:center;padding:20px;line-height:2.2;">';
+    sorted.forEach(([word, count], i) => {
+        const size = Math.max(11, Math.round((count / maxF) * 48));
+        const color = colors[i % colors.length];
+        const opacity = 0.5 + 0.5 * (count / maxF);
+        html += `<span class="wc-word" style="font-size:${size}px;color:${color};opacity:${opacity};font-weight:${size > 24 ? 700 : 400};" title="${word}: ${count}">${word}</span> `;
+    });
+    html += "</div>";
+    htmlDiv.innerHTML = html;
+}
+
+// ── Author co-occurrence table ──
+function renderCoauthorTable(data) {
+    const canvas = document.getElementById("grafica");
+    const htmlDiv = document.getElementById("grafica-html");
+    canvas.style.display = "none";
+    htmlDiv.style.display = "";
+    destroyChart("grafica");
+
+    const pairs = {};
+    data.forEach((r) => {
+        const bibtex = r.BIBTEX || "";
+        const authMatch = bibtex.match(/author\s*=\s*[{"]([^}"]+)[}"]/i);
+        if (!authMatch) return;
+        const authors = authMatch[1].split(" and ").map((a) => a.trim().replace(/\s+/g, " ")).filter(Boolean);
+        for (let i = 0; i < authors.length; i++) {
+            for (let j = i + 1; j < authors.length; j++) {
+                const pair = [authors[i], authors[j]].sort().join(" & ");
+                pairs[pair] = (pairs[pair] || 0) + 1;
+            }
+        }
+    });
+    const sorted = Object.entries(pairs).sort((a, b) => b[1] - a[1]).slice(0, 30);
+    const maxP = sorted[0]?.[1] || 1;
+
+    let html = '<table class="coauthor-table"><thead><tr><th>Author Pair</th><th>Co-authored Papers</th></tr></thead><tbody>';
+    sorted.forEach(([pair, count]) => {
+        const w = Math.round((count / maxP) * 200);
+        html += `<tr><td>${pair}</td><td><span class="coauthor-bar" style="width:${w}px;"></span>${count}</td></tr>`;
+    });
+    html += "</tbody></table>";
+    htmlDiv.innerHTML = html;
+}
+
+// ── Trend co-occurrence matrix (HTML-based) ──
+function renderTrendMatrix(data) {
+    const canvas = document.getElementById("grafica");
+    const htmlDiv = document.getElementById("grafica-html");
+    canvas.style.display = "none";
+    htmlDiv.style.display = "";
+    destroyChart("grafica");
+
+    const TRENDS = [
+        "Unit Test Generation", "High-Level Test Gen", "Oracle Generation",
+        "Reflections", "Test Augmentation or Improvement", "Test Configuration",
+    ];
+
+    // Build co-occurrence matrix
+    const matrix = {};
+    TRENDS.forEach((a) => { matrix[a] = {}; TRENDS.forEach((b) => { matrix[a][b] = 0; }); });
+
+    data.forEach((r) => {
+        const trends = (r.TREND || "").split(",").map((s) => s.trim()).filter((t) => TRENDS.includes(t));
+        // Count single occurrences on diagonal
+        trends.forEach((t) => { matrix[t][t]++; });
+        // Count co-occurrences
+        for (let i = 0; i < trends.length; i++) {
+            for (let j = i + 1; j < trends.length; j++) {
+                matrix[trends[i]][trends[j]]++;
+                matrix[trends[j]][trends[i]]++;
+            }
+        }
+    });
+
+    const maxOff = Math.max(1, ...TRENDS.flatMap((a) => TRENDS.map((b) => a === b ? 0 : matrix[a][b])));
+
+    const SHORT = {
+        "Unit Test Generation": "Unit Test",
+        "High-Level Test Gen": "HL Test",
+        "Oracle Generation": "Oracle",
+        "Reflections": "Reflections",
+        "Test Augmentation or Improvement": "Augmentation",
+        "Test Configuration": "Config",
+    };
+
+    let html = '<div style="overflow-x:auto;padding:10px;"><table class="coauthor-table" style="min-width:500px;">';
+    html += "<thead><tr><th></th>";
+    TRENDS.forEach((t) => { html += `<th style="text-align:center;font-size:0.72rem;writing-mode:vertical-rl;transform:rotate(180deg);height:90px;">${SHORT[t]}</th>`; });
+    html += "</tr></thead><tbody>";
+
+    TRENDS.forEach((row) => {
+        html += `<tr><td style="font-weight:600;font-size:0.78rem;white-space:nowrap;">${SHORT[row]}</td>`;
+        TRENDS.forEach((col) => {
+            const val = matrix[row][col];
+            if (row === col) {
+                html += `<td style="text-align:center;background:#e0f2f1;font-weight:700;color:#00695c;">${val}</td>`;
+            } else {
+                const intensity = val / maxOff;
+                const bg = `rgba(0,121,107,${(intensity * 0.7 + 0.05).toFixed(2)})`;
+                const fg = intensity > 0.4 ? "#fff" : "#333";
+                html += `<td style="text-align:center;background:${bg};color:${fg};font-size:0.82rem;">${val || ""}</td>`;
+            }
+        });
+        html += "</tr>";
+    });
+    html += "</tbody></table></div>";
+    htmlDiv.innerHTML = html;
 }
 
 function renderBarFromCount(cid, data, field, label, exclude = []) {

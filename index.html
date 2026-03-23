@@ -6,6 +6,16 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Large Language Models for Software Testing: A Research Roadmap</title>
 
+  <!-- Favicon (inline SVG data-URI) -->
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🔬</text></svg>" />
+
+  <!-- Open Graph -->
+  <meta property="og:title" content="LLM for Software Testing: A Research Roadmap" />
+  <meta property="og:description" content="Interactive companion page for the survey on Large Language Models applied to Software Testing. Explore trends, venues, tools, and benchmarks." />
+  <meta property="og:type" content="website" />
+  <meta property="og:url" content="https://github.com/giis-uniovi/retorch-llmexpstudy-rp" />
+  <meta name="description" content="Interactive companion page for the survey on Large Language Models applied to Software Testing. Explore trends, venues, tools, and benchmarks." />
+
   <!-- Materialize CSS -->
   <link href="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/css/materialize.min.css" rel="stylesheet" />
   <link href="https://cdn.datatables.net/1.13.6/css/jquery.dataTables.min.css" rel="stylesheet" />
@@ -16,6 +26,7 @@
   <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
   <script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chartjs-chart-matrix@2.0.1/dist/chartjs-chart-matrix.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js"></script>
 
   <script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/js/materialize.min.js"></script>
@@ -33,17 +44,40 @@
 
 <body>
 
-  <div class="container">
+  <!-- Skip navigation (accessibility) -->
+  <a href="#main-content" class="skip-nav">Skip to main content</a>
+
+  <!-- Dark mode toggle switch -->
+  <label class="theme-switch" title="Toggle dark mode">
+    <span class="theme-switch-icon">&#9788;</span>
+    <input type="checkbox" id="dark-mode-toggle" />
+    <span class="theme-switch-slider"></span>
+    <span class="theme-switch-icon">&#9790;</span>
+  </label>
+
+  <!-- Loading spinner -->
+  <div id="loading-overlay">
+    <div class="preloader-wrapper big active">
+      <div class="spinner-layer spinner-teal-only">
+        <div class="circle-clipper left"><div class="circle"></div></div>
+        <div class="gap-patch"><div class="circle"></div></div>
+        <div class="circle-clipper right"><div class="circle"></div></div>
+      </div>
+    </div>
+    <p style="color:#00796b;margin-top:16px;font-size:0.9rem;">Loading dataset&hellip;</p>
+  </div>
+
+  <main class="container" id="main-content" aria-label="Main content" style="display:none;">
 
     <!-- Header -->
     <header class="center-align header-section">
       <h4 class="main-title teal-text text-darken-3">Large Language Models for Software Testing: A Research Roadmap</h4>
       <div class="authors-block">
-        <b>Cristian Augusto</b><sup>2</sup>,
-        <b>Antonia Bertolino</b><sup>1</sup>,
-        <b>Guglielmo De Angelis</b><sup>3</sup>,
-        <b>Francesca Lonetti</b><sup>4</sup>,
-        <b>Jesús Morán</b><sup>2</sup>
+        <a href="https://orcid.org/0000-0001-6140-1375" target="_blank" class="author-link"><b>Cristian Augusto</b></a><sup>2</sup>,
+        <a href="https://orcid.org/0000-0001-8749-1356" target="_blank" class="author-link"><b>Antonia Bertolino</b></a><sup>1</sup>,
+        <a href="https://orcid.org/0000-0002-1076-0076" target="_blank" class="author-link"><b>Guglielmo De Angelis</b></a><sup>3</sup>,
+        <a href="https://orcid.org/0000-0002-4864-2219" target="_blank" class="author-link"><b>Francesca Lonetti</b></a><sup>4</sup>,
+        <a href="https://orcid.org/0000-0002-7544-3901" target="_blank" class="author-link"><b>Jes&uacute;s Mor&aacute;n</b></a><sup>2</sup>
       </div>
       <div class="affiliations-block">
         <sup>1</sup>GSSI, Italy &nbsp;&middot;&nbsp;
@@ -73,8 +107,17 @@
 
     <div class="divider"></div>
 
+    <!-- Mini-nav -->
+    <nav class="mini-nav" id="miniNav" aria-label="Section navigation">
+      <a href="#section-filters" class="mini-nav-link active" data-section="section-filters">Filters</a>
+      <a href="#section-summary" class="mini-nav-link" data-section="section-summary">Summary</a>
+      <a href="#section-bubble" class="mini-nav-link" data-section="section-bubble">Trends</a>
+      <a href="#section-insights" class="mini-nav-link" data-section="section-insights">Insights</a>
+      <a href="#section-table" class="mini-nav-link" data-section="section-table">Table</a>
+    </nav>
+
     <!-- Filter bar: corpus toggle + year slider + stats -->
-    <div class="filter-bar">
+    <section class="filter-bar" id="section-filters" aria-label="Filters">
       <div class="filter-bar-row">
         <div class="filter-group">
           <span class="filter-label">Corpus:</span>
@@ -97,83 +140,205 @@
           <div class="chip stat-chip stat-arxiv"><b id="stat-arxiv">0</b>&nbsp;arXiv</div>
         </div>
       </div>
+    </section>
+
+    <!-- Summary statistics card -->
+    <div class="row" id="section-summary">
+      <div class="col s12">
+        <div class="card">
+          <div class="card-content summary-card-content">
+            <div class="card-title-row">
+              <span class="card-title card-title-sm">Key Insights</span>
+              <button class="card-collapse-btn" aria-label="Collapse card" title="Collapse">&#9650;</button>
+            </div>
+            <div class="card-collapsible">
+              <div class="summary-grid">
+                <div class="summary-item">
+                  <span class="summary-value" id="summary-avg-year">-</span>
+                  <canvas class="sparkline" id="spark-avg-year" width="60" height="20"></canvas>
+                  <span class="summary-label">Avg. papers/year</span>
+                </div>
+                <div class="summary-item">
+                  <span class="summary-value" id="summary-top-conf">-</span>
+                  <span class="summary-label">Top conference</span>
+                </div>
+                <div class="summary-item">
+                  <span class="summary-value" id="summary-top-jour">-</span>
+                  <span class="summary-label">Top journal</span>
+                </div>
+                <div class="summary-item">
+                  <span class="summary-value" id="summary-top-llm">-</span>
+                  <span class="summary-label">Most used LLM</span>
+                </div>
+                <div class="summary-item">
+                  <span class="summary-value" id="summary-top-trend">-</span>
+                  <span class="summary-label">Top trend</span>
+                </div>
+                <div class="summary-item">
+                  <span class="summary-value" id="summary-top-benchmark">-</span>
+                  <span class="summary-label">Top benchmark</span>
+                </div>
+                <div class="summary-item">
+                  <span class="summary-value" id="summary-peak-year">-</span>
+                  <canvas class="sparkline" id="spark-peak-year" width="60" height="20"></canvas>
+                  <span class="summary-label">Peak year</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
 
     <!-- Bubble chart: Classification Dimensions by Research Trend -->
-    <div class="row">
+    <div class="row" id="section-bubble">
       <div class="col s12">
         <div class="card">
           <div class="card-content">
-            <span class="card-title card-title-sm">Testing Trends vs LLM Interaction, Contextual Info, Scope & Approach</span>
-            <div class="chart-container chart-container-lg"><canvas id="chart-bubble"></canvas></div>
+            <div class="card-title-row">
+              <div class="chart-header-row">
+                <span class="card-title card-title-sm">Testing Trends vs LLM Interaction, Contextual Info, Scope & Approach</span>
+                <div class="chart-dl-wrap">
+                  <button class="chart-download-btn" data-canvas="chart-bubble" title="Download chart">&#128247;</button>
+                  <div class="chart-dl-menu">
+                    <a class="chart-dl-png" data-canvas="chart-bubble">PNG</a>
+                    <a class="chart-dl-svg" data-canvas="chart-bubble">SVG</a>
+                  </div>
+                </div>
+              </div>
+              <button class="card-collapse-btn" aria-label="Collapse card" title="Collapse">&#9650;</button>
+            </div>
+            <div class="card-collapsible">
+              <div class="chart-container chart-container-lg"><canvas id="chart-bubble"></canvas></div>
+            </div>
           </div>
         </div>
       </div>
     </div>
 
     <!-- Additional insights chart -->
-    <div class="row">
+    <div class="row" id="section-insights">
       <div class="col s12">
         <div class="card">
           <div class="card-content">
-            <div class="row" style="margin-bottom:0">
-              <div class="col s12 m6">
-                <span class="card-title card-title-sm">Additional Insights</span>
-              </div>
-              <div class="col s12 m6">
-                <div class="input-field" style="margin-top:0">
-                  <select id="graficoSelect">
-                    <optgroup label="Publication">
-                      <option value="ano" selected>Articles per Year</option>
-                      <option value="conferences">Conferences</option>
-                      <option value="journals">Journals</option>
-                      <option value="contribution">Type of Contribution</option>
-                      <option value="database">Database Source</option>
-                    </optgroup>
-                    <optgroup label="Tooling & Evaluation">
-                      <option value="llmsused">LLMs Used</option>
-                      <option value="benchmarks">Benchmarks</option>
-                      <option value="metrics">Evaluation Metrics</option>
-                      <option value="tools">Tools</option>
-                    </optgroup>
-                  </select>
-                  <label for="graficoSelect">Chart type</label>
+            <div class="card-title-row">
+              <div class="row" style="margin-bottom:0;flex:1">
+                <div class="col s12 m5">
+                  <div class="chart-header-row">
+                    <span class="card-title card-title-sm">Additional Insights</span>
+                    <div class="chart-dl-wrap">
+                      <button class="chart-download-btn" data-canvas="grafica" title="Download chart">&#128247;</button>
+                      <div class="chart-dl-menu">
+                        <a class="chart-dl-png" data-canvas="grafica">PNG</a>
+                        <a class="chart-dl-svg" data-canvas="grafica">SVG</a>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                <div class="col s12 m7">
+                  <div class="input-field" style="margin-top:0">
+                    <select id="graficoSelect">
+                      <optgroup label="Publication">
+                        <option value="ano" selected>Articles per Year</option>
+                        <option value="trend_time">Trends over Time</option>
+                        <option value="conferences">Conferences</option>
+                        <option value="journals">Journals</option>
+                        <option value="contribution">Type of Contribution</option>
+                        <option value="database">Database Source</option>
+                      </optgroup>
+                      <optgroup label="Tooling & Evaluation">
+                        <option value="llmsused">LLMs Used</option>
+                        <option value="llm_timeline">LLM Usage Timeline</option>
+                        <option value="benchmarks">Benchmarks</option>
+                        <option value="metrics">Evaluation Metrics</option>
+                        <option value="tools">Tools</option>
+                      </optgroup>
+                      <optgroup label="Exploration">
+                        <option value="wordcloud">Abstract Word Cloud</option>
+                        <option value="coauthors">Author Co-occurrence</option>
+                        <option value="trend_matrix">Trend Co-occurrence Matrix</option>
+                      </optgroup>
+                    </select>
+                    <label for="graficoSelect">Chart type</label>
+                  </div>
                 </div>
               </div>
+              <button class="card-collapse-btn" aria-label="Collapse card" title="Collapse">&#9650;</button>
             </div>
-            <div class="chart-container chart-container-lg"><canvas id="grafica"></canvas></div>
+            <div class="card-collapsible">
+              <div class="chart-container chart-container-lg"><canvas id="grafica"></canvas></div>
+              <!-- Fallback div for non-canvas charts (word cloud, author network) -->
+              <div id="grafica-html" class="chart-container chart-container-lg" style="display:none;overflow:auto;"></div>
+            </div>
           </div>
         </div>
       </div>
     </div>
 
     <!-- Article table -->
-    <div class="row">
+    <div class="row" id="section-table">
       <div class="col s12">
         <div class="card">
           <div class="card-content">
-            <div class="table-toolbar">
-              <span class="card-title card-title-sm" style="margin:0">Article List</span>
-              <div class="table-toolbar-right">
-                <button id="toggleFilters" class="btn-small waves-effect waves-light teal lighten-1" style="text-transform:none;height:28px;line-height:28px;padding:0 12px;font-size:0.78rem;border-radius:4px;">&#9660; Filters</button>
-                <label class="toolbar-label" for="pageLengthSelect">Show:</label>
-                <select id="pageLengthSelect" class="browser-default toolbar-select">
-                  <option value="5">5</option>
-                  <option value="10">10</option>
-                  <option value="25" selected>25</option>
-                  <option value="50">50</option>
-                  <option value="100">100</option>
-                  <option value="-1">All</option>
-                </select>
+            <div class="card-title-row">
+              <div class="table-toolbar" style="flex:1">
+                <span class="card-title card-title-sm" style="margin:0">Article List</span>
+                <div class="table-toolbar-right">
+                  <!-- Abstract search -->
+                  <input id="abstractSearch" type="text" placeholder="Search abstracts... (Ctrl+K)" class="abstract-search-input" aria-label="Search abstracts" />
+                  <!-- Column visibility -->
+                  <div class="col-vis-wrap">
+                    <button id="colVisBtn" class="btn-small waves-effect waves-light teal lighten-1" style="text-transform:none;height:28px;line-height:28px;padding:0 12px;font-size:0.78rem;border-radius:4px;">Columns</button>
+                    <div id="colVisDropdown" class="col-vis-dropdown"></div>
+                  </div>
+                  <!-- Export filtered -->
+                  <button id="exportFiltered" class="btn-small waves-effect waves-light teal lighten-1" style="text-transform:none;height:28px;line-height:28px;padding:0 12px;font-size:0.78rem;border-radius:4px;">Export Filtered</button>
+                  <!-- Bulk BibTeX export -->
+                  <button id="exportBibtex" class="btn-small waves-effect waves-light teal lighten-1" style="text-transform:none;height:28px;line-height:28px;padding:0 12px;font-size:0.78rem;border-radius:4px;">Export BibTeX</button>
+                  <!-- Reading list -->
+                  <button id="showReadingList" class="btn-small waves-effect waves-light teal lighten-1" style="text-transform:none;height:28px;line-height:28px;padding:0 12px;font-size:0.78rem;border-radius:4px;">&#9733; Reading List <span id="readingListCount" class="filter-badge" style="display:none;">0</span></button>
+                  <button id="toggleFilters" class="btn-small waves-effect waves-light teal lighten-1" style="text-transform:none;height:28px;line-height:28px;padding:0 12px;font-size:0.78rem;border-radius:4px;">&#9660; Filters</button>
+                  <label class="toolbar-label" for="pageLengthSelect">Show:</label>
+                  <select id="pageLengthSelect" class="browser-default toolbar-select">
+                    <option value="5">5</option>
+                    <option value="10">10</option>
+                    <option value="25" selected>25</option>
+                    <option value="50">50</option>
+                    <option value="100">100</option>
+                    <option value="-1">All</option>
+                  </select>
+                </div>
               </div>
+              <button class="card-collapse-btn" aria-label="Collapse card" title="Collapse">&#9650;</button>
             </div>
-            <table id="tabla" class="striped highlight responsive-table"></table>
+            <!-- Active filter chips -->
+            <div id="activeFilterChips" class="active-filter-chips" style="display:none;"></div>
+            <div class="card-collapsible">
+              <table id="tabla" class="striped highlight responsive-table"></table>
+            </div>
           </div>
         </div>
       </div>
     </div>
 
-  </div>
+    <!-- Footer -->
+    <footer class="page-footer-custom">
+      <div class="footer-content">
+        <div class="footer-left">
+          <span class="footer-title">LLM for Software Testing Roadmap</span>
+          <span class="footer-copy">&copy; 2025 &mdash; Augusto, Bertolino, De Angelis, Lonetti, Mor&aacute;n</span>
+        </div>
+        <div class="footer-links">
+          <a href="https://github.com/giis-uniovi/retorch-llmexpstudy-rp" target="_blank">GitHub</a>
+          <a href="https://orcid.org/0000-0001-6140-1375" target="_blank">Contact</a>
+        </div>
+      </div>
+    </footer>
+
+  </main>
+
+  <!-- Back to top button -->
+  <button id="backToTop" class="btn-floating waves-effect waves-light teal" title="Back to top">&#9650;</button>
 
   <!-- Modal for abstract -->
   <div id="modal-abstract" class="modal">
@@ -183,6 +348,10 @@
       <p id="modal-abstract-venue" style="font-style:italic;color:#555;"></p>
       <h6 style="margin-top:1.2rem;font-weight:600;">Abstract</h6>
       <p id="modal-abstract-content"></p>
+      <div id="modal-related-papers" style="margin-top:1.5rem;display:none;">
+        <h6 style="font-weight:600;">Related Papers</h6>
+        <ul id="modal-related-list" class="related-papers-list"></ul>
+      </div>
     </div>
     <div class="modal-footer">
       <a id="modal-abstract-link" href="#" target="_blank" class="waves-effect waves-green btn-flat" style="display:none;">Published version</a>
