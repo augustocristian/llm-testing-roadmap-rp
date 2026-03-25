@@ -70,7 +70,7 @@ function renderBubbleDashboard(data) {
         { col: "SCOPE", name: "Scope", vals: ["Functional", "Non-Functional"], color: "rgba(20,184,166,0.82)", band: "rgba(20,184,166,0.06)" },
         { col: "LLM ITERACTION", name: "LLM Interaction", vals: ["Pure Prompting", "Hybrid Prompting"], color: "rgba(59,130,246,0.82)", band: "rgba(59,130,246,0.06)" },
         { col: "CONTEXTUAL INFO", name: "Contextual Info", vals: ["Alone", "Fine-Tune", "RAG"], color: "rgba(245,158,11,0.82)", band: "rgba(245,158,11,0.06)" },
-        { col: "FOCUS", name: "Focus", vals: ["Code/Proccedure", "Data"], color: "rgba(236,72,153,0.82)", band: "rgba(236,72,153,0.06)" },
+        { col: "FOCUS", name: "Focus", vals: ["Code/Proccedure", "Data", "Optimization"], color: "rgba(236,72,153,0.82)", band: "rgba(236,72,153,0.06)" },
     ];
 
     const TREND_ORDER = [
