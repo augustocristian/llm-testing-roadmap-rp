@@ -154,7 +154,7 @@ function renderInsightsChart(data, chartKey) {
     // Ensure canvas visible, hide HTML fallback (word cloud / coauthor reset)
     const canvasEl = document.getElementById(cid);
     const htmlDiv = document.getElementById("grafica-html");
-    if (canvasEl) canvasEl.style.display = "";
+    if (canvasEl) { canvasEl.style.display = ""; canvasEl.parentElement.style.display = ""; }
     if (htmlDiv) { htmlDiv.style.display = "none"; htmlDiv.innerHTML = ""; }
 
     switch (chartKey) {
@@ -344,7 +344,7 @@ function renderInsightsChart(data, chartKey) {
 function renderWordCloud(data) {
     const canvas = document.getElementById("grafica");
     const htmlDiv = document.getElementById("grafica-html");
-    canvas.style.display = "none";
+    canvas.parentElement.style.display = "none";
     htmlDiv.style.display = "";
     destroyChart("grafica");
 
@@ -381,7 +381,7 @@ function renderWordCloud(data) {
 function renderCoauthorTable(data) {
     const canvas = document.getElementById("grafica");
     const htmlDiv = document.getElementById("grafica-html");
-    canvas.style.display = "none";
+    canvas.parentElement.style.display = "none";
     htmlDiv.style.display = "";
     destroyChart("grafica");
 
@@ -414,7 +414,7 @@ function renderCoauthorTable(data) {
 function renderTrendMatrix(data) {
     const canvas = document.getElementById("grafica");
     const htmlDiv = document.getElementById("grafica-html");
-    canvas.style.display = "none";
+    canvas.parentElement.style.display = "none";
     htmlDiv.style.display = "";
     destroyChart("grafica");
 
