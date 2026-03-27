@@ -17,10 +17,10 @@ This replication package includes the raw data from the articles analyzed in the
 - **Abstract:** Short abstract retrieved from the article.
 - **Trend:** Type of LLM-based testing: Unit Test Generation, High-Level Test Gen, Oracle Generation, Test Augmentation or Improvement, Test Configuration, and Reflections.
 - **LLM Interaction:** Type of LLM interaction: Pure Prompting or Hybrid Prompting.
-- **Contextual Info:** How the LLM is augmented: Alone, RAG, or Fine-Tune.
+- **Contextual Info:** How the LLM is improved with context: Alone, RAG, or Fine-Tune.
 - **Approach:** Type of approach: Tool/Approach or Agent.
 - **Scope:** Testing scope: Functional or Non-Functional.
-- **Docus:** Additional documentation references.
+- **Focus:** refers if the approach is intented to generate Code/Proccedure, Data or Optimization .
 - **Benchmark:** Name or identifier of the benchmark used.
 - **LLMs Used:** Name of the model/models used in the article.
 - **Evaluation Metric:** Name of the metrics used in evaluating the article.
