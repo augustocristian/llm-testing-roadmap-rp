@@ -150,12 +150,22 @@ function renderBubbleDashboard(data) {
 
 function renderInsightsChart(data, chartKey) {
     const cid = "grafica";
-
-    // Ensure canvas visible, hide HTML fallback (word cloud / coauthor reset)
     const canvasEl = document.getElementById(cid);
     const htmlDiv = document.getElementById("grafica-html");
-    if (canvasEl) { canvasEl.style.display = ""; canvasEl.parentElement.style.display = ""; }
-    if (htmlDiv) { htmlDiv.style.display = "none"; htmlDiv.innerHTML = ""; }
+    const isHtmlChart = ["wordcloud", "coauthors", "trend_matrix"].includes(chartKey);
+
+    // Destroy first — destroyChart may reset canvasWrapper display for venue charts
+    destroyChart(cid);
+
+    // Set visibility AFTER destroy so we always get the correct final state
+    if (canvasEl) {
+        canvasEl.style.display = "";
+        canvasEl.parentElement.style.display = isHtmlChart ? "none" : "";
+    }
+    if (htmlDiv) {
+        htmlDiv.style.display = isHtmlChart ? "" : "none";
+        htmlDiv.innerHTML = "";
+    }
 
     switch (chartKey) {
         case "ano": {
@@ -342,11 +352,7 @@ function renderInsightsChart(data, chartKey) {
 
 // ── Word cloud (HTML-based) ──
 function renderWordCloud(data) {
-    const canvas = document.getElementById("grafica");
     const htmlDiv = document.getElementById("grafica-html");
-    canvas.parentElement.style.display = "none";
-    htmlDiv.style.display = "";
-    destroyChart("grafica");
 
     const STOP = new Set(["the","a","an","of","in","to","and","for","is","are","was","were","be","been",
         "with","that","this","on","by","from","as","at","or","not","it","we","our","can","has","have",
@@ -379,11 +385,7 @@ function renderWordCloud(data) {
 
 // ── Author co-occurrence table ──
 function renderCoauthorTable(data) {
-    const canvas = document.getElementById("grafica");
     const htmlDiv = document.getElementById("grafica-html");
-    canvas.parentElement.style.display = "none";
-    htmlDiv.style.display = "";
-    destroyChart("grafica");
 
     const pairs = {};
     data.forEach((r) => {
@@ -412,11 +414,7 @@ function renderCoauthorTable(data) {
 
 // ── Trend co-occurrence matrix (HTML-based) ──
 function renderTrendMatrix(data) {
-    const canvas = document.getElementById("grafica");
     const htmlDiv = document.getElementById("grafica-html");
-    canvas.parentElement.style.display = "none";
-    htmlDiv.style.display = "";
-    destroyChart("grafica");
 
     const TRENDS = [
         "Unit Test Generation", "High-Level Test Gen", "Oracle Generation",

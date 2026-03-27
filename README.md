@@ -20,7 +20,7 @@ This replication package includes the raw data from the articles analyzed in the
 - **Contextual Info:** How the LLM is improved with context: Alone, RAG, or Fine-Tune.
 - **Approach:** Type of approach: Tool/Approach or Agent.
 - **Scope:** Testing scope: Functional or Non-Functional.
-- **Focus:** refers if the approach is intented to generate Code/Proccedure, Data or Optimization .
+- **Focus:** refers if the approach is intended to generate Code/Procedure, Data or Optimization .
 - **Benchmark:** Name or identifier of the benchmark used.
 - **LLMs Used:** Name of the model/models used in the article.
 - **Evaluation Metric:** Name of the metrics used in evaluating the article.
