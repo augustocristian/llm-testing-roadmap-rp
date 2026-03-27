@@ -1,10 +1,10 @@
 [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.17144161.svg)](https://doi.org/10.5281/zenodo.17144161)
-# Replication package for *'Large Language Models for Software Testing: A Research Roadmap'*
+# Replication package for *'A Research Roadmap on the Usage of Large Language Models in Software Testing Emerging from a Semi-Systematic Literature Review'*
 
-This repository contains the replication package of the paper *Large Language Models for Software Testing: A Research Roadmap*
+This repository contains the replication package of the paper *A Research Roadmap on the Usage of Large Language Models in Software Testing Emerging from a Semi-Systematic Literature Review*
 published at *TO-DO*
 
-This replication package includes the raw data from the articles analyzed in the roadmap and an [interactive view of them hosted on GitHub Pages](https://giis-uniovi.github.io/llm-testing-roadmap-rp/). The raw dataset is a semicolon-separated CSV file available in the [/data](/data) directory, with a structure (columns) as follows:
+This replication package includes the raw data from the articles analyzed in the roadmap and an [interactive view of them hosted on GitHub Pages](https://augustocristian.github.io/llm-testing-roadmap-rp/). The raw dataset is a semicolon-separated CSV file available in the [/data](/data) directory, with a structure (columns) as follows:
 - **ID:** Internal reference used in the study.
 - **Title:** Title of the article.
 - **Year:** Publication year or when it was made available on arXiv.

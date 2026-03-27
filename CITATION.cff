@@ -16,11 +16,11 @@ authors:
   - family-names: "Morán"
     given-names: "Jesús"
     orcid: "https://orcid.org/0000-0002-7544-3901"
-title: "Replication package for 'Large Language Models for Software Testing: A Research Roadmap'"
+title: "Replication package for 'A Research Roadmap on the Usage of Large Language Models in Software Testing Emerging from a Semi-Systematic Literature Review'"
 version: "1.0"
 doi: "TO-DO"
-date-released: "2025-09-19"
-url: "https://github.com/giis-uniovi/retorch-llmexpstudy-rp"
+date-released: "2026-04-15"
+url: "https://github.com/augustocristian/llm-testing-roadmap-rp"
 preferred-citation:
   type: article
   authors:
@@ -39,8 +39,8 @@ preferred-citation:
     - family-names: "Morán"
       given-names: "Jesús"
       orcid: "https://orcid.org/0000-0002-7544-3901"
-  title: "Large Language Models for Software Testing: A Research Roadmap"
-  year: 2025
+  title: "A Research Roadmap on the Usage of Large Language Models in Software Testing Emerging from a Semi-Systematic Literature Review"
+  year: 2026
   journal: 
     name: "TO-DO"
     volume: "TO-DO"
