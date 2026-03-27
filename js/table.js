@@ -137,6 +137,7 @@ const SCOPE_COLORS = {
 const FOCUS_COLORS = {
     "Code/Proccedure": { bg: "#e8eaf6", fg: "#283593" },
     "Data":            { bg: "#fff9c4", fg: "#f57f17" },
+    "Optimization":    { bg: "#e8f5e9", fg: "#2e7d32" },
 };
 const TREND_COLORS = {
     "Unit Test Generation":             { bg: "#e3f2fd", fg: "#0d47a1" },

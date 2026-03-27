@@ -1,10 +1,10 @@
-[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.17144161.svg)](https://doi.org/10.5281/zenodo.17144161)
-# Replication package for *'Large Language Models for Software Testing: A Research Roadmap'*
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.17144161.svg)](https://doi.org/10.5281/zenodo.17144160)
+# Replication package for *'A Research Roadmap on the Usage of Large Language Models in Software Testing Emerging from a Semi-Systematic Literature Review'*
 
-This repository contains the replication package of the paper *Large Language Models for Software Testing: A Research Roadmap*
+This repository contains the replication package of the paper *A Research Roadmap on the Usage of Large Language Models in Software Testing Emerging from a Semi-Systematic Literature Review*
 published at *TO-DO*
 
-This replication package includes the raw data from the articles analyzed in the roadmap and an [interactive view of them hosted on GitHub Pages](https://giis-uniovi.github.io/llm-testing-roadmap-rp/). The raw dataset is a semicolon-separated CSV file available in the [/data](/data) directory, with a structure (columns) as follows:
+This replication package includes the raw data from the articles analyzed in the roadmap and an [interactive view of them hosted on GitHub Pages](https://augustocristian.github.io/llm-testing-roadmap-rp/). The raw dataset is a semicolon-separated CSV file available in the [/data](/data) directory, with a structure (columns) as follows:
 - **ID:** Internal reference used in the study.
 - **Title:** Title of the article.
 - **Year:** Publication year or when it was made available on arXiv.
@@ -13,20 +13,20 @@ This replication package includes the raw data from the articles analyzed in the
 - **Publication type:** Type of publication: Conference, Journal, or arXiv.
 - **Bibtex:** BibTeX entry of the publication.
 - **Database:** Source database: ACM, IEEE, Elsevier, Springer, or Orig.
-- **Type of Contribution:** Type of contribution: survey, evaluation, or research contribution.
+- **Type of Contribution:** Type of contribution: Survey, Evaluation, or Research Contribution.
 - **Abstract:** Short abstract retrieved from the article.
 - **Trend:** Type of LLM-based testing: Unit Test Generation, High-Level Test Gen, Oracle Generation, Test Augmentation or Improvement, Test Configuration, and Reflections.
 - **LLM Interaction:** Type of LLM interaction: Pure Prompting or Hybrid Prompting.
-- **Contextual Info:** How the LLM is augmented: Alone, RAG, or Fine-Tune.
+- **Contextual Info:** How the LLM is improved with context: Alone, RAG, or Fine-Tune.
 - **Approach:** Type of approach: Tool/Approach or Agent.
 - **Scope:** Testing scope: Functional or Non-Functional.
-- **Docus:** Additional documentation references.
+- **Focus:** refers if the approach is intended to generate Code/Procedure, Data or Optimization .
 - **Benchmark:** Name or identifier of the benchmark used.
 - **LLMs Used:** Name of the model/models used in the article.
 - **Evaluation Metric:** Name of the metrics used in evaluating the article.
 - **Tool:** Name of the tool proposed by the article.
 
-The replication package is also archived on [Zenodo](https://doi.org/10.5281/zenodo.17144161) 
+The replication package is also archived on [Zenodo](https://doi.org/10.5281/zenodo.17144160)
 
 ## Contributing
 

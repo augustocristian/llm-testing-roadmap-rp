@@ -70,7 +70,7 @@ function renderBubbleDashboard(data) {
         { col: "SCOPE", name: "Scope", vals: ["Functional", "Non-Functional"], color: "rgba(20,184,166,0.82)", band: "rgba(20,184,166,0.06)" },
         { col: "LLM ITERACTION", name: "LLM Interaction", vals: ["Pure Prompting", "Hybrid Prompting"], color: "rgba(59,130,246,0.82)", band: "rgba(59,130,246,0.06)" },
         { col: "CONTEXTUAL INFO", name: "Contextual Info", vals: ["Alone", "Fine-Tune", "RAG"], color: "rgba(245,158,11,0.82)", band: "rgba(245,158,11,0.06)" },
-        { col: "FOCUS", name: "Focus", vals: ["Code/Proccedure", "Data"], color: "rgba(236,72,153,0.82)", band: "rgba(236,72,153,0.06)" },
+        { col: "FOCUS", name: "Focus", vals: ["Code/Proccedure", "Data", "Optimization"], color: "rgba(236,72,153,0.82)", band: "rgba(236,72,153,0.06)" },
     ];
 
     const TREND_ORDER = [
@@ -150,12 +150,22 @@ function renderBubbleDashboard(data) {
 
 function renderInsightsChart(data, chartKey) {
     const cid = "grafica";
-
-    // Ensure canvas visible, hide HTML fallback (word cloud / coauthor reset)
     const canvasEl = document.getElementById(cid);
     const htmlDiv = document.getElementById("grafica-html");
-    if (canvasEl) canvasEl.style.display = "";
-    if (htmlDiv) { htmlDiv.style.display = "none"; htmlDiv.innerHTML = ""; }
+    const isHtmlChart = ["wordcloud", "coauthors", "trend_matrix"].includes(chartKey);
+
+    // Destroy first — destroyChart may reset canvasWrapper display for venue charts
+    destroyChart(cid);
+
+    // Set visibility AFTER destroy so we always get the correct final state
+    if (canvasEl) {
+        canvasEl.style.display = "";
+        canvasEl.parentElement.style.display = isHtmlChart ? "none" : "";
+    }
+    if (htmlDiv) {
+        htmlDiv.style.display = isHtmlChart ? "" : "none";
+        htmlDiv.innerHTML = "";
+    }
 
     switch (chartKey) {
         case "ano": {
@@ -342,11 +352,7 @@ function renderInsightsChart(data, chartKey) {
 
 // ── Word cloud (HTML-based) ──
 function renderWordCloud(data) {
-    const canvas = document.getElementById("grafica");
     const htmlDiv = document.getElementById("grafica-html");
-    canvas.style.display = "none";
-    htmlDiv.style.display = "";
-    destroyChart("grafica");
 
     const STOP = new Set(["the","a","an","of","in","to","and","for","is","are","was","were","be","been",
         "with","that","this","on","by","from","as","at","or","not","it","we","our","can","has","have",
@@ -379,11 +385,7 @@ function renderWordCloud(data) {
 
 // ── Author co-occurrence table ──
 function renderCoauthorTable(data) {
-    const canvas = document.getElementById("grafica");
     const htmlDiv = document.getElementById("grafica-html");
-    canvas.style.display = "none";
-    htmlDiv.style.display = "";
-    destroyChart("grafica");
 
     const pairs = {};
     data.forEach((r) => {
@@ -412,11 +414,7 @@ function renderCoauthorTable(data) {
 
 // ── Trend co-occurrence matrix (HTML-based) ──
 function renderTrendMatrix(data) {
-    const canvas = document.getElementById("grafica");
     const htmlDiv = document.getElementById("grafica-html");
-    canvas.style.display = "none";
-    htmlDiv.style.display = "";
-    destroyChart("grafica");
 
     const TRENDS = [
         "Unit Test Generation", "High-Level Test Gen", "Oracle Generation",
