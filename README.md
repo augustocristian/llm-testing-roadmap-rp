@@ -1,4 +1,4 @@
-[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.17144161.svg)](https://doi.org/10.5281/zenodo.17144161)
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.17144161.svg)](https://doi.org/10.5281/zenodo.17144160)
 # Replication package for *'A Research Roadmap on the Usage of Large Language Models in Software Testing Emerging from a Semi-Systematic Literature Review'*
 
 This repository contains the replication package of the paper *A Research Roadmap on the Usage of Large Language Models in Software Testing Emerging from a Semi-Systematic Literature Review*
@@ -13,7 +13,7 @@ This replication package includes the raw data from the articles analyzed in the
 - **Publication type:** Type of publication: Conference, Journal, or arXiv.
 - **Bibtex:** BibTeX entry of the publication.
 - **Database:** Source database: ACM, IEEE, Elsevier, Springer, or Orig.
-- **Type of Contribution:** Type of contribution: survey, evaluation, or research contribution.
+- **Type of Contribution:** Type of contribution: Survey, Evaluation, or Research Contribution.
 - **Abstract:** Short abstract retrieved from the article.
 - **Trend:** Type of LLM-based testing: Unit Test Generation, High-Level Test Gen, Oracle Generation, Test Augmentation or Improvement, Test Configuration, and Reflections.
 - **LLM Interaction:** Type of LLM interaction: Pure Prompting or Hybrid Prompting.
@@ -26,7 +26,7 @@ This replication package includes the raw data from the articles analyzed in the
 - **Evaluation Metric:** Name of the metrics used in evaluating the article.
 - **Tool:** Name of the tool proposed by the article.
 
-The replication package is also archived on [Zenodo](https://doi.org/10.5281/zenodo.17144161) 
+The replication package is also archived on [Zenodo](https://doi.org/10.5281/zenodo.17144160)
 
 ## Contributing
 
