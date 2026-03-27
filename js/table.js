@@ -21,16 +21,22 @@ const CHIP_COLORS = {
     "LLMs USED":            { bg: "#e0f7fa", fg: "#00695c" },
     "EVALUATION METRIC":    { bg: "#f3e5f5", fg: "#6a1b9a" },
     "TOOL":                 { bg: "#efebe9", fg: "#4e342e" },
-    "TYPE OF CONTRIBUTION": { bg: "#f1f8e9", fg: "#33691e" },
+    "TYPE OF CONTRIBUTION": null,
     "PUBLICATION TYPE":     null,
     "YEAR":                 null,
     "PUBLISHED INTO":       null,
 };
 
-function showAbstract(title, authors, venue, abstract, url, trends) {
+function showAbstract(title, authors, venue, abstract, url, trends, conf, year) {
     document.getElementById("modal-abstract-title").textContent = title;
     document.getElementById("modal-abstract-authors").textContent = authors;
-    document.getElementById("modal-abstract-venue").textContent = venue;
+    const venueEl = document.getElementById("modal-abstract-venue");
+    const confUrl = (typeof _confUrls === "object" && _confUrls && conf && year) ? _confUrls[conf + " " + year] : null;
+    if (confUrl) {
+        venueEl.innerHTML = `<a href="${confUrl}" target="_blank" rel="noopener" style="color:#00796b;text-decoration:underline;">${venue}</a>`;
+    } else {
+        venueEl.textContent = venue;
+    }
     document.getElementById("modal-abstract-content").textContent = abstract;
     const linkBtn = document.getElementById("modal-abstract-link");
     if (url) {
@@ -88,14 +94,8 @@ function showAbstract(title, authors, venue, abstract, url, trends) {
 }
 
 function showAbstractFromAttr(el) {
-    showAbstract(
-        decodeURIComponent(el.getAttribute("data-title") || ""),
-        decodeURIComponent(el.getAttribute("data-authors") || ""),
-        decodeURIComponent(el.getAttribute("data-venue") || ""),
-        decodeURIComponent(el.getAttribute("data-abstract") || ""),
-        decodeURIComponent(el.getAttribute("data-url") || ""),
-        decodeURIComponent(el.getAttribute("data-trends") || "")
-    );
+    const attr = (name) => decodeURIComponent(el.getAttribute("data-" + name) || "");
+    showAbstract(attr("title"), attr("authors"), attr("venue"), attr("abstract"), attr("url"), attr("trends"), attr("conf"), attr("year"));
 }
 
 let _lastBibtexBlobUrl = null;
@@ -122,9 +122,8 @@ const INTERACTION_COLORS = {
     "Hybrid Prompting": { bg: "#1565c0", fg: "#fff" },
 };
 const CONTEXT_COLORS = {
-    "Alone":     { bg: "#e8f5e9", fg: "#2e7d32" },
-    "RAG":       { bg: "#fff3e0", fg: "#e65100" },
-    "Fine-Tune": { bg: "#fce4ec", fg: "#ad1457" },
+    "RAG":                { bg: "#fff3e0", fg: "#e65100" },
+    "Fine-Tuning":        { bg: "#fce4ec", fg: "#ad1457" },
 };
 const APPROACH_COLORS = {
     "Tool/Approach": { bg: "#ede7f6", fg: "#4527a0" },
@@ -134,8 +133,13 @@ const SCOPE_COLORS = {
     "Functional":     { bg: "#e0f7fa", fg: "#006064" },
     "Non-Functional": { bg: "#fff8e1", fg: "#f57f17" },
 };
+const CONTRIBUTION_COLORS = {
+    "Survey":         { bg: "#e3f2fd", fg: "#0d47a1" },
+    "New Method/Tool":{ bg: "#e8f5e9", fg: "#1b5e20" },
+    "Evaluation":     { bg: "#fff3e0", fg: "#e65100" },
+};
 const FOCUS_COLORS = {
-    "Code/Proccedure": { bg: "#e8eaf6", fg: "#283593" },
+    "Code/Procedure": { bg: "#e8eaf6", fg: "#283593" },
     "Data":            { bg: "#fff9c4", fg: "#f57f17" },
     "Optimization":    { bg: "#e8f5e9", fg: "#2e7d32" },
 };
@@ -199,16 +203,19 @@ const PER_VALUE_MAPS = {
     "APPROACH":         APPROACH_COLORS,
     "SCOPE":            SCOPE_COLORS,
     "FOCUS":            FOCUS_COLORS,
+    "TYPE OF CONTRIBUTION": CONTRIBUTION_COLORS,
     "YEAR":             YEAR_COLORS,
     "PUBLISHED INTO":   VENUE_COLORS,
 };
 
-function chipHtml(val, colName) {
+function chipHtml(val, colName, url) {
     const valMap = PER_VALUE_MAPS[colName];
     const c = valMap
         ? (valMap[val] || { bg: "#e0e0e0", fg: "#333" })
         : (CHIP_COLORS[colName] || { bg: "#e8f5e9", fg: "#2e7d32" });
-    return `<span class="table-chip" style="background:${c.bg};color:${c.fg}">${val}</span>`;
+    const chip = `<span class="table-chip" style="background:${c.bg};color:${c.fg}">${val}</span>`;
+    if (url) return `<a href="${url}" target="_blank" rel="noopener" style="text-decoration:none">${chip}</a>`;
+    return chip;
 }
 
 // ── Column filter state ──
@@ -262,16 +269,25 @@ function initDataTable(data, headers) {
         .filter((col) => visibleHeaders.includes(col))
         .map((col) => ({
             targets: visibleHeaders.indexOf(col),
-            render: (cellData, type) => {
+            render: (cellData, type, row) => {
                 if (type !== "display" || !cellData) return cellData || "";
                 let raw = cellData;
-                if (col === "PUBLISHED INTO") raw = raw.replace(/^[CJ]:\s*/, "");
+                const isVenue = col === "PUBLISHED INTO";
+                if (isVenue) raw = raw.replace(/^[CJ]:\s*/, "");
                 const vals = raw.split(",").map((v) => v.trim()).filter(Boolean);
+                const makeChip = (v) => {
+                    let url = null;
+                    if (isVenue && cellData.startsWith("C:") && typeof _confUrls === "object" && _confUrls) {
+                        const year = row[yearIdx] || "";
+                        url = _confUrls[v + " " + year] || null;
+                    }
+                    return chipHtml(v, col, url);
+                };
                 if (vals.length <= MAX_VISIBLE_CHIPS) {
-                    return vals.map((v) => chipHtml(v, col)).join(" ");
+                    return vals.map(makeChip).join(" ");
                 }
-                const visible = vals.slice(0, MAX_VISIBLE_CHIPS).map((v) => chipHtml(v, col)).join(" ");
-                const extra = vals.slice(MAX_VISIBLE_CHIPS).map((v) => chipHtml(v, col)).join(" ");
+                const visible = vals.slice(0, MAX_VISIBLE_CHIPS).map(makeChip).join(" ");
+                const extra = vals.slice(MAX_VISIBLE_CHIPS).map(makeChip).join(" ");
                 const remaining = vals.length - MAX_VISIBLE_CHIPS;
                 return `<span class="chip-wrap">${visible}<span class="chip-extra"> ${extra}</span>` +
                     `<span class="chip-more" onclick="this.parentElement.classList.toggle('expanded')">+${remaining}</span></span>`;
@@ -331,10 +347,13 @@ function initDataTable(data, headers) {
                     const urlMatch = bibtex.match(/url\s*=\s*[{"]([^}"]+)[}"]/i);
                     const paperUrl = urlMatch ? urlMatch[1].trim() : "";
                     const trends = row[visibleHeaders.indexOf("TREND")] || "";
+                    const year = row[yearIdx] || "";
                     return `<a class="green-btn" href="#modal-abstract"
                         data-title="${encodeURIComponent(row[visibleHeaders.indexOf("TITLE")] || "")}"
                         data-authors="${encodeURIComponent(authors)}"
                         data-venue="${encodeURIComponent(venue)}"
+                        data-conf="${encodeURIComponent(acronym)}"
+                        data-year="${encodeURIComponent(year)}"
                         data-url="${encodeURIComponent(paperUrl)}"
                         data-trends="${encodeURIComponent(trends)}"
                         data-abstract="${encodeURIComponent(cellData)}"

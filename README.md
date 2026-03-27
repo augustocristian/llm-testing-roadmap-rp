@@ -17,7 +17,7 @@ This replication package includes the raw data from the articles analyzed in the
 - **Abstract:** Short abstract retrieved from the article.
 - **Trend:** Type of LLM-based testing: Unit Test Generation, High-Level Test Gen, Oracle Generation, Test Augmentation or Improvement, Test Configuration, and Reflections.
 - **LLM Interaction:** Type of LLM interaction: Pure Prompting or Hybrid Prompting.
-- **Contextual Info:** How the LLM is improved with context: Alone, RAG, or Fine-Tune.
+- **Domain Specific Knowledge:** How the LLM is improved with context: Prompt Engineering, RAG, or Fine-Tuning.
 - **Approach:** Type of approach: Tool/Approach or Agent.
 - **Scope:** Testing scope: Functional or Non-Functional.
 - **Focus:** refers if the approach is intended to generate Code/Procedure, Data or Optimization .
@@ -40,7 +40,7 @@ paper itself.
 
 ## Citing this work
 
-- Cristian Augusto, Antonia Bertolino, Guglielmo De Angelis, Francesca Lonetti and Jesús Morán, “Large Language Models  for Software Testing: A Research Roadmap” in TO-DO   [https://doi.org/XXXXX](TO-DO) - [Full Paper available](TO-DO) - [Authors version](TO-DO) -
+- Cristian Augusto, Antonia Bertolino, Guglielmo De Angelis, Francesca Lonetti and Jesús Morán, “A Research Roadmap on the Usage of Large Language Models in Software Testing Emerging from a Semi-Systematic Literature Review” in TO-DO   [https://doi.org/XXXXX](TO-DO) - [Full Paper available](TO-DO) - [Authors version](TO-DO) -
   [Download citation](TO-DO)
 
 ## Acknowledgments

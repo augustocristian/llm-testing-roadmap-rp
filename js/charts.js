@@ -10,10 +10,15 @@ function destroyChart(canvasId) {
     const canvas = document.getElementById(canvasId);
     if (canvas) {
         const wrapper = canvas.parentElement;
-        const legend = wrapper.querySelector(".venue-legend");
+        const collapsible = wrapper ? wrapper.parentElement : null;
+        // Legend is now appended to collapsible (one level above wrapper)
+        const legend = collapsible ? collapsible.querySelector(".venue-legend") : null;
         if (legend) {
             legend.remove();
-            wrapper.style.display = "";
+            collapsible.style.display = "";
+            collapsible.style.alignItems = "";
+            wrapper.style.flex = "";
+            wrapper.style.minWidth = "";
         }
     }
 }
@@ -26,7 +31,7 @@ function generateColors(count, lightness = 65) {
     return Array.from({ length: count }, (_, i) => `hsl(${(i * 360) / count}, 70%, ${lightness}%)`);
 }
 
-// ── Bar chart ──
+// ── Bar chart (horizontal) ──
 function renderBarChart(canvasId, labels, data, label, options = {}) {
     destroyChart(canvasId);
     const canvas = getCanvas(canvasId);
@@ -37,10 +42,14 @@ function renderBarChart(canvasId, labels, data, label, options = {}) {
             datasets: [{ label, data, backgroundColor: generateColors(labels.length) }],
         },
         options: {
+            indexAxis: "y",
             responsive: true,
             maintainAspectRatio: false,
             plugins: { legend: { display: false } },
-            scales: { y: { title: { display: true, text: "No. Articles" } } },
+            scales: {
+                x: { beginAtZero: true, title: { display: true, text: "No. Articles" } },
+                y: { ticks: { font: { size: 11 } } },
+            },
             onClick: (evt, elems) => {
                 if (elems.length > 0) {
                     const idx = elems[0].index;
@@ -151,13 +160,17 @@ function renderVenueChart(canvasId, years, datasets, venueGroups) {
     // Build grouped HTML legend container
     const canvas = getCanvas(canvasId);
     const wrapper = canvas.parentElement;
-    let legendEl = wrapper.querySelector(".venue-legend");
+    const collapsible = wrapper.parentElement;
+    let legendEl = collapsible.querySelector(".venue-legend");
     if (!legendEl) {
         legendEl = document.createElement("div");
         legendEl.className = "venue-legend";
-        wrapper.style.display = "flex";
-        wrapper.style.alignItems = "flex-start";
-        wrapper.appendChild(legendEl);
+        // Flex on the collapsible so canvas wrapper can flex:1 without overflowing
+        collapsible.style.display = "flex";
+        collapsible.style.alignItems = "flex-start";
+        wrapper.style.flex = "1";
+        wrapper.style.minWidth = "0";
+        collapsible.appendChild(legendEl);
     }
 
     chartInstances[canvasId] = new Chart(canvas, {
@@ -216,17 +229,202 @@ function renderVenueChart(canvasId, years, datasets, venueGroups) {
         idx += group.count;
     });
     legendEl.innerHTML = html;
-    legendEl.style.cssText = "min-width:130px;max-height:400px;overflow-y:auto;padding-left:10px;";
+    legendEl.style.cssText = "min-width:130px;max-height:400px;overflow-y:auto;padding-left:10px;flex-shrink:0;";
 
     // Click to toggle dataset visibility
     legendEl.querySelectorAll("[data-dsi]").forEach((el) => {
         el.addEventListener("click", () => {
-            const di = parseInt(el.dataset.dsi);
+            const di = Number.parseInt(el.dataset.dsi);
             const meta = chartInstances[canvasId].getDatasetMeta(di);
             meta.hidden = !meta.hidden;
             el.style.opacity = meta.hidden ? "0.35" : "1";
             chartInstances[canvasId].update();
         });
+    });
+}
+
+// ── Generic cross-tab matrix heatmap (chartjs-chart-matrix) ──
+// counts: function(row, col) → number
+function renderCrossHeatmap(canvasId, rowLabels, colLabels, counts, xTitle, yTitle, palette) {
+    destroyChart(canvasId);
+    const [r, g, b] = palette || [0, 105, 92];
+
+    const matrixData = [];
+    rowLabels.forEach((row) => {
+        colLabels.forEach((col) => {
+            matrixData.push({ x: col, y: row, v: counts(row, col) });
+        });
+    });
+    const maxVal = Math.max(1, ...matrixData.map((d) => d.v));
+
+    chartInstances[canvasId] = new Chart(getCanvas(canvasId), {
+        type: "matrix",
+        data: {
+            datasets: [{
+                data: matrixData,
+                backgroundColor(ctx) {
+                    const v = ctx.dataset.data[ctx.dataIndex].v;
+                    const a = v === 0 ? 0.04 : 0.12 + (v / maxVal) * 0.82;
+                    return `rgba(${r},${g},${b},${a.toFixed(2)})`;
+                },
+                borderColor: "#fff",
+                borderWidth: 2,
+                width:  ({ chart }) => { const a = chart.chartArea; return a ? (a.width  / colLabels.length) - 2 : 30; },
+                height: ({ chart }) => { const a = chart.chartArea; return a ? (a.height / rowLabels.length) - 2 : 20; },
+            }],
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: { display: false },
+                tooltip: {
+                    callbacks: {
+                        title: () => "",
+                        label: (ctx) => {
+                            const { x, y, v } = ctx.dataset.data[ctx.dataIndex];
+                            return [`${y}  ×  ${x}`, `${v} paper${v === 1 ? "" : "s"}`];
+                        },
+                    },
+                },
+            },
+            scales: {
+                x: {
+                    type: "category",
+                    labels: colLabels,
+                    offset: true,
+                    ticks: { font: { size: 10 }, maxRotation: 40, minRotation: 30 },
+                    grid: { display: false },
+                    title: { display: !!xTitle, text: xTitle },
+                },
+                y: {
+                    type: "category",
+                    labels: [...rowLabels].reverse(),
+                    offset: true,
+                    ticks: { font: { size: 10 } },
+                    grid: { display: false },
+                    title: { display: !!yTitle, text: yTitle },
+                },
+            },
+        },
+    });
+}
+
+// ── Stacked area chart ──
+function renderStackedAreaChart(canvasId, labels, datasets, yLabel) {
+    destroyChart(canvasId);
+    chartInstances[canvasId] = new Chart(getCanvas(canvasId), {
+        type: "line",
+        data: { labels, datasets },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: { position: "top", labels: { font: { size: 11 }, boxWidth: 14 } },
+                tooltip: { mode: "index", intersect: false },
+            },
+            interaction: { mode: "index", intersect: false },
+            scales: {
+                x: { title: { display: true, text: "Year" } },
+                y: { stacked: true, beginAtZero: true, title: { display: true, text: yLabel || "No. Articles" } },
+            },
+        },
+    });
+}
+
+// Convert hex color to rgba string
+function hexAlpha(hex, a) {
+    const h = hex.replace("#", "");
+    const r = Number.parseInt(h.slice(0, 2), 16);
+    const g = Number.parseInt(h.slice(2, 4), 16);
+    const b = Number.parseInt(h.slice(4, 6), 16);
+    return `rgba(${r},${g},${b},${a})`;
+}
+
+// ── Sankey chart ──
+function renderSankeyChart(canvasId, links, nodeColors, nodeLabels) {
+    destroyChart(canvasId);
+
+    const DIM_HEADERS = [
+        ["Trend"],
+        ["Approach"],
+        ["Scope"],
+        ["LLM", "Interaction"],
+        ["Dom. Spec.", "Know."],
+        ["Focus"],
+    ];
+
+    // Plugin: draw bold dimension-column headers above the chart area
+    const dimHeaderPlugin = {
+        id: "sankeyDimHeaders",
+        afterDraw(chart) {
+            const meta = chart.getDatasetMeta(0);
+            const nodes = meta?.controller?.nodes;
+            if (!nodes?.size) return;
+
+            // Collect one representative x+width per column index
+            const colPositions = new Map(); // colIndex → {x, width}
+            nodes.forEach((node) => {
+                const col = node.column ?? node.col;
+                if (col === undefined) return;
+                if (!colPositions.has(col)) colPositions.set(col, { x: node.x, width: node.width });
+            });
+            if (!colPositions.size) return;
+
+            const ctx = chart.ctx;
+            const LINE_H = 16;
+            ctx.save();
+            ctx.textAlign = "center";
+            ctx.textBaseline = "bottom";
+            ctx.fillStyle = "#333";
+
+            colPositions.forEach((pos, col) => {
+                const lines = DIM_HEADERS[col] || [`Col ${col}`];
+                const cx = pos.x + pos.width / 2;
+                const baseY = chart.chartArea.top - 4;
+                ctx.font = `bold 14px 'Lato', 'Helvetica Neue', Arial, sans-serif`;
+                lines.forEach((line, i) => {
+                    ctx.fillText(line, cx, baseY - (lines.length - 1 - i) * LINE_H);
+                });
+            });
+            ctx.restore();
+        },
+    };
+
+    chartInstances[canvasId] = new Chart(getCanvas(canvasId), {
+        type: "sankey",
+        data: {
+            datasets: [{
+                data: links,
+                colorFrom: (c) => hexAlpha(nodeColors[c.dataset.data[c.dataIndex].from] || "#90a4ae", 0.55),
+                colorTo:   (c) => hexAlpha(nodeColors[c.dataset.data[c.dataIndex].to]   || "#90a4ae", 0.55),
+                colorMode: "gradient",
+                labels: nodeLabels || {},
+                color: "#334155",
+                font: { size: 14, family: "'Lato', 'Helvetica Neue', Arial, sans-serif" },
+                size: "max",
+                nodePadding: 22,
+            }],
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            layout: { padding: { top: 44 } },
+            plugins: {
+                legend: { display: false },
+                tooltip: {
+                    callbacks: {
+                        label: (c) => {
+                            const d = c.dataset.data[c.dataIndex];
+                            const fl = nodeLabels?.[d.from] || d.from;
+                            const tl = nodeLabels?.[d.to]   || d.to;
+                            return `${fl} → ${tl}: ${d.flow} paper${d.flow === 1 ? "" : "s"}`;
+                        },
+                    },
+                },
+            },
+        },
+        plugins: [dimHeaderPlugin],
     });
 }
 

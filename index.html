@@ -4,22 +4,23 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Large Language Models for Software Testing: A Research Roadmap</title>
+  <title>A Research Roadmap on the Usage of Large Language Models in Software Testing Emerging from aSemi-Systematic Literature Review</title>
 
   <!-- Favicon (inline SVG data-URI) -->
   <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🔬</text></svg>" />
 
   <!-- Open Graph -->
-  <meta property="og:title" content="LLM for Software Testing: A Research Roadmap" />
+  <meta property="og:title" content="A Research Roadmap on the Usage of Large Language Models in Software Testing Emerging from a Semi-Systematic Literature Review" />
   <meta property="og:description" content="Interactive companion page for the survey on Large Language Models applied to Software Testing. Explore trends, venues, tools, and benchmarks." />
   <meta property="og:type" content="website" />
-  <meta property="og:url" content="https://github.com/giis-uniovi/retorch-llmexpstudy-rp" />
+  <meta property="og:url" content="https://augustocristian.github.io/llm-testing-roadmap-rp/" />
   <meta name="description" content="Interactive companion page for the survey on Large Language Models applied to Software Testing. Explore trends, venues, tools, and benchmarks." />
 
   <!-- Materialize CSS -->
   <link href="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/css/materialize.min.css" rel="stylesheet" />
   <link href="https://cdn.datatables.net/1.13.6/css/jquery.dataTables.min.css" rel="stylesheet" />
   <link href="https://cdn.jsdelivr.net/npm/nouislider@15.7.1/dist/nouislider.min.css" rel="stylesheet" />
+  <link href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" rel="stylesheet" />
   <link href="css/styles.css" rel="stylesheet" />
 
   <!-- JavaScript libraries -->
@@ -32,6 +33,8 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/js/materialize.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/nouislider@15.7.1/dist/nouislider.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/js-yaml@4.1.0/dist/js-yaml.min.js"></script>
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chartjs-chart-sankey@0.12.0/dist/chartjs-chart-sankey.min.js"></script>
 
   <!-- Application modules -->
   <script src="js/charts.js" defer></script>
@@ -71,7 +74,7 @@
 
     <!-- Header -->
     <header class="center-align header-section">
-      <h4 class="main-title teal-text text-darken-3">Large Language Models for Software Testing: A Research Roadmap</h4>
+      <h4 class="main-title teal-text text-darken-3">A Research Roadmap on the Usage of Large Language Models in Software Testing<br>Emerging from a Semi-Systematic Literature Review</h4>
       <div class="authors-block">
         <a href="https://orcid.org/0000-0001-6140-1375" target="_blank" class="author-link"><b>Cristian Augusto</b></a><sup>2</sup>,
         <a href="https://orcid.org/0000-0001-8749-1356" target="_blank" class="author-link"><b>Antonia Bertolino</b></a><sup>1</sup>,
@@ -197,7 +200,7 @@
           <div class="card-content">
             <div class="card-title-row">
               <div class="chart-header-row">
-                <span class="card-title card-title-sm">Testing Trends vs LLM Interaction, Contextual Info, Scope & Approach</span>
+                <span class="card-title card-title-sm">Testing Trends vs LLM Interaction, Domain Specific Knowledge, Scope & Approach</span>
                 <div class="chart-dl-wrap">
                   <button class="chart-download-btn" data-canvas="chart-bubble" title="Download chart">&#128247;</button>
                   <div class="chart-dl-menu">
@@ -245,6 +248,8 @@
                         <option value="journals">Journals</option>
                         <option value="contribution">Type of Contribution</option>
                         <option value="database">Database Source</option>
+                        <option value="conf_map">Conference Map</option>
+                        <option value="contrib_time">Contribution Over Time</option>
                       </optgroup>
                       <optgroup label="Tooling & Evaluation">
                         <option value="llmsused">LLMs Used</option>
@@ -252,6 +257,14 @@
                         <option value="benchmarks">Benchmarks</option>
                         <option value="metrics">Evaluation Metrics</option>
                         <option value="tools">Tools</option>
+                      </optgroup>
+                      <optgroup label="Cross-Dimensional Analysis">
+                        <option value="llm_trend">LLM × Testing Trend</option>
+                        <option value="bench_trend">Benchmark × Trend</option>
+                        <option value="metric_trend">Metric × Trend</option>
+                        <option value="gap_matrix">Research Gap Matrix</option>
+                        <option value="dsk_trend">Domain Knowledge × Trend</option>
+                        <option value="sankey">Research Flow (Sankey)</option>
                       </optgroup>
                       <optgroup label="Exploration">
                         <option value="wordcloud">Abstract Word Cloud</option>
@@ -329,7 +342,8 @@
           <span class="footer-copy">&copy; 2025 &mdash; Augusto, Bertolino, De Angelis, Lonetti, Mor&aacute;n</span>
         </div>
         <div class="footer-links">
-          <a href="https://github.com/giis-uniovi/retorch-llmexpstudy-rp" target="_blank">GitHub</a>
+          <a href="https://github.com/augustocristian/llm-testing-roadmap-rp" target="_blank">GitHub</a>
+          <a href="https://doi.org/10.5281/zenodo.17144160" target="_blank">Zenodo</a>
           <a href="https://orcid.org/0000-0001-6140-1375" target="_blank">Contact</a>
         </div>
       </div>
@@ -344,7 +358,7 @@
   <div id="modal-abstract" class="modal">
     <div class="modal-content">
       <h4 id="modal-abstract-title"></h4>
-      <h6 id="modal-abstract-authors" style="color:#555;margin-top:-0.3rem;"></h6>
+      <h6 id="modal-abstract-authors" style="color:#555;margin-top:0.8rem;"></h6>
       <p id="modal-abstract-venue" style="font-style:italic;color:#555;"></p>
       <h6 style="margin-top:1.2rem;font-weight:600;">Abstract</h6>
       <p id="modal-abstract-content"></p>

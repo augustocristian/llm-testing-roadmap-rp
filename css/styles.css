@@ -284,6 +284,11 @@
     width: 100%;
 }
 
+/* Insights bar/html charts: always fit within the visible viewport */
+#section-insights .chart-container-lg {
+    height: clamp(280px, calc(100vh - 160px), 520px);
+}
+
 /* ── Rows: tighten gap between chart rows ── */
 .row {
     margin-bottom: 0;
@@ -401,6 +406,11 @@
 .dataTables_wrapper {
     width: 100% !important;
     overflow-x: auto;
+}
+/* Hide DataTables-generated controls — replaced by custom toolbar */
+.dataTables_filter,
+.dataTables_length {
+    display: none !important;
 }
 .dataTables_wrapper .dataTables_filter input {
     background-color: #fff;

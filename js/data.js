@@ -1,5 +1,26 @@
 const CSV_PATH = "data/Papers.csv";
 
+const TREND_ORDER = [
+    "Unit Test Generation", "High-Level Test Gen", "Oracle Generation",
+    "Reflections", "Test Augmentation or Improvement", "Test Configuration",
+];
+const TREND_SHORT = {
+    "Unit Test Generation":             "Unit Test Gen",
+    "High-Level Test Gen":              "HL Test Gen",
+    "Oracle Generation":                "Oracle Gen",
+    "Reflections":                      "Reflections",
+    "Test Augmentation or Improvement": "Test Aug.",
+    "Test Configuration":               "Test Config",
+};
+const TREND_COLORS_MAP = {
+    "Unit Test Generation":             "#0d47a1",
+    "High-Level Test Gen":              "#1b5e20",
+    "Oracle Generation":                "#e65100",
+    "Reflections":                      "#ad1457",
+    "Test Augmentation or Improvement": "#4527a0",
+    "Test Configuration":               "#006064",
+};
+
 function loadCSV(callback) {
     Papa.parse(CSV_PATH, {
         download: true,
@@ -8,7 +29,10 @@ function loadCSV(callback) {
         skipEmptyLines: true,
         complete: ({ data, meta }) => {
             data = data.filter((row) => row.ID?.trim());
-            callback(data, meta.fields);
+            // Load conference URLs before initializing the table so chips have links
+            loadConfUrls().catch(() => {}).finally(() => {
+                callback(data, meta.fields);
+            });
         },
     });
 }
@@ -69,14 +93,10 @@ function renderBubbleDashboard(data) {
         { col: "APPROACH", name: "Approach", vals: ["Tool/Approach", "Agent"], color: "rgba(99,102,241,0.82)", band: "rgba(99,102,241,0.06)" },
         { col: "SCOPE", name: "Scope", vals: ["Functional", "Non-Functional"], color: "rgba(20,184,166,0.82)", band: "rgba(20,184,166,0.06)" },
         { col: "LLM ITERACTION", name: "LLM Interaction", vals: ["Pure Prompting", "Hybrid Prompting"], color: "rgba(59,130,246,0.82)", band: "rgba(59,130,246,0.06)" },
-        { col: "CONTEXTUAL INFO", name: "Contextual Info", vals: ["Alone", "Fine-Tune", "RAG"], color: "rgba(245,158,11,0.82)", band: "rgba(245,158,11,0.06)" },
-        { col: "FOCUS", name: "Focus", vals: ["Code/Proccedure", "Data", "Optimization"], color: "rgba(236,72,153,0.82)", band: "rgba(236,72,153,0.06)" },
+        { col: "CONTEXTUAL INFO", name: "Domain Specific Knowledge", vals: ["Fine-Tuning", "RAG"], color: "rgba(245,158,11,0.82)", band: "rgba(245,158,11,0.06)" },
+        { col: "FOCUS", name: "Focus", vals: ["Code/Procedure", "Data", "Optimization"], color: "rgba(236,72,153,0.82)", band: "rgba(236,72,153,0.06)" },
     ];
 
-    const TREND_ORDER = [
-        "Unit Test Generation", "High-Level Test Gen", "Oracle Generation",
-        "Reflections", "Test Augmentation or Improvement", "Test Configuration",
-    ];
     const yLabels = [...TREND_ORDER].reverse();
 
     // Build x-axis slots with gaps between dimension groups
@@ -152,7 +172,7 @@ function renderInsightsChart(data, chartKey) {
     const cid = "grafica";
     const canvasEl = document.getElementById(cid);
     const htmlDiv = document.getElementById("grafica-html");
-    const isHtmlChart = ["wordcloud", "coauthors", "trend_matrix"].includes(chartKey);
+    const isHtmlChart = ["wordcloud", "coauthors", "trend_matrix", "conf_map"].includes(chartKey);
 
     // Destroy first — destroyChart may reset canvasWrapper display for venue charts
     destroyChart(cid);
@@ -249,10 +269,7 @@ function renderInsightsChart(data, chartKey) {
         }
         case "trend_time": {
             const ttYears = [...new Set(data.map((r) => r.YEAR).filter(Boolean))].sort();
-            const TREND_ORDER_TT = [
-                "Unit Test Generation", "High-Level Test Gen", "Oracle Generation",
-                "Reflections", "Test Augmentation or Improvement", "Test Configuration",
-            ];
+            const TREND_ORDER_TT = TREND_ORDER;
             const TREND_PAL = ["#0d47a1", "#1b5e20", "#e65100", "#ad1457", "#4527a0", "#006064"];
             const ttCounts = {};
             TREND_ORDER_TT.forEach((t) => { ttCounts[t] = {}; });
@@ -347,6 +364,200 @@ function renderInsightsChart(data, chartKey) {
             renderTrendMatrix(data);
             break;
         }
+        case "conf_map": {
+            renderConferenceMap(data);
+            break;
+        }
+
+        // ── Cross-dimensional analysis ──
+
+        case "llm_trend": {
+            const llmMap = {};
+            data.forEach((r) => {
+                if (!r.TREND || !r["LLMs USED"]) return;
+                const trends = r.TREND.split(",").map((s) => s.trim()).filter((t) => TREND_ORDER.includes(t));
+                const llms = r["LLMs USED"].split(",").map((s) => s.trim())
+                    .filter((v) => v && !["n/s", "none"].includes(v.toLowerCase()));
+                trends.forEach((t) => llms.forEach((l) => {
+                    llmMap[l] = llmMap[l] || {};
+                    llmMap[l][t] = (llmMap[l][t] || 0) + 1;
+                }));
+            });
+            const llmTotals = Object.entries(llmMap)
+                .map(([l, tc]) => [l, Object.values(tc).reduce((a, b) => a + b, 0)])
+                .sort((a, b) => b[1] - a[1]);
+            const topLLMs = llmTotals.slice(0, 15).map(([l]) => l);
+            const tShort = TREND_ORDER.map((t) => TREND_SHORT[t]);
+            renderCrossHeatmap(cid, topLLMs, tShort,
+                (row, col) => { const t = TREND_ORDER[tShort.indexOf(col)]; return llmMap[row]?.[t] || 0; },
+                "Testing Trend", "LLM");
+            break;
+        }
+
+        case "bench_trend": {
+            const bMap = {};
+            data.forEach((r) => {
+                if (!r.TREND || !r.BENCHMARK) return;
+                const trends = r.TREND.split(",").map((s) => s.trim()).filter((t) => TREND_ORDER.includes(t));
+                const benches = r.BENCHMARK.split(",").map((s) => s.trim())
+                    .filter((v) => v && !["none", "no bmk-ds", "n/s", "no bmk"].includes(v.toLowerCase()));
+                trends.forEach((t) => benches.forEach((b) => {
+                    bMap[b] = bMap[b] || {};
+                    bMap[b][t] = (bMap[b][t] || 0) + 1;
+                }));
+            });
+            const bTotals = Object.entries(bMap)
+                .map(([b, tc]) => [b, Object.values(tc).reduce((a, v) => a + v, 0)])
+                .sort((a, b) => b[1] - a[1]);
+            const topBenches = bTotals.slice(0, 18).map(([b]) => b);
+            const tShortB = TREND_ORDER.map((t) => TREND_SHORT[t]);
+            renderCrossHeatmap(cid, topBenches, tShortB,
+                (row, col) => { const t = TREND_ORDER[tShortB.indexOf(col)]; return bMap[row]?.[t] || 0; },
+                "Testing Trend", "Benchmark", [13, 71, 161]);
+            break;
+        }
+
+        case "metric_trend": {
+            const mMap = {};
+            data.forEach((r) => {
+                if (!r.TREND || !r["EVALUATION METRIC"]) return;
+                const trends = r.TREND.split(",").map((s) => s.trim()).filter((t) => TREND_ORDER.includes(t));
+                const metrics = r["EVALUATION METRIC"].split(",").map((s) => s.trim())
+                    .filter((v) => v && !["none", "no eval.", "n/s"].includes(v.toLowerCase()));
+                trends.forEach((t) => metrics.forEach((m) => {
+                    mMap[m] = mMap[m] || {};
+                    mMap[m][t] = (mMap[m][t] || 0) + 1;
+                }));
+            });
+            const mTotals = Object.entries(mMap)
+                .map(([m, tc]) => [m, Object.values(tc).reduce((a, v) => a + v, 0)])
+                .sort((a, b) => b[1] - a[1]);
+            const topMetrics = mTotals.slice(0, 18).map(([m]) => m);
+            const tShortM = TREND_ORDER.map((t) => TREND_SHORT[t]);
+            renderCrossHeatmap(cid, topMetrics, tShortM,
+                (row, col) => { const t = TREND_ORDER[tShortM.indexOf(col)]; return mMap[row]?.[t] || 0; },
+                "Testing Trend", "Evaluation Metric", [74, 20, 140]);
+            break;
+        }
+
+        case "gap_matrix": {
+            const gMap = {};
+            const FOCUS_VALS = ["Code/Procedure", "Data", "Optimization"];
+            TREND_ORDER.forEach((t) => { gMap[t] = {}; FOCUS_VALS.forEach((f) => { gMap[t][f] = 0; }); });
+            data.forEach((r) => {
+                if (!r.TREND || !r.FOCUS) return;
+                const trends = r.TREND.split(",").map((s) => s.trim()).filter((t) => TREND_ORDER.includes(t));
+                const focuses = r.FOCUS.split(",").map((s) => s.trim()).filter((f) => FOCUS_VALS.includes(f));
+                trends.forEach((t) => focuses.forEach((f) => { gMap[t][f] = (gMap[t][f] || 0) + 1; }));
+            });
+            renderCrossHeatmap(cid, TREND_ORDER, FOCUS_VALS,
+                (row, col) => gMap[row]?.[col] || 0,
+                "Focus Area", "Testing Trend", [183, 28, 28]);
+            break;
+        }
+
+        case "dsk_trend": {
+            const dMap = {};
+            const DSK_VALS = ["Fine-Tuning", "RAG"];
+            DSK_VALS.forEach((d) => { dMap[d] = {}; });
+            data.forEach((r) => {
+                if (!r.TREND || !r["CONTEXTUAL INFO"]) return;
+                const trends = r.TREND.split(",").map((s) => s.trim()).filter((t) => TREND_ORDER.includes(t));
+                const dsks = r["CONTEXTUAL INFO"].split(",").map((s) => s.trim()).filter((d) => DSK_VALS.includes(d));
+                trends.forEach((t) => dsks.forEach((d) => {
+                    dMap[d][t] = (dMap[d][t] || 0) + 1;
+                }));
+            });
+            const tShortD = TREND_ORDER.map((t) => TREND_SHORT[t]);
+            renderCrossHeatmap(cid, DSK_VALS, tShortD,
+                (row, col) => { const t = TREND_ORDER[tShortD.indexOf(col)]; return dMap[row]?.[t] || 0; },
+                "Testing Trend", "Domain Knowledge", [230, 81, 0]);
+            break;
+        }
+
+        case "contrib_time": {
+            const ctYears = [...new Set(data.map((r) => r.YEAR).filter(Boolean))].sort();
+            const CONTRIB_VALS = ["Survey", "New Method/Tool", "Evaluation"];
+            const CONTRIB_COLORS = ["#1565c0", "#2e7d32", "#e65100"];
+            const ctCounts = {};
+            CONTRIB_VALS.forEach((c) => { ctCounts[c] = {}; });
+            data.forEach((r) => {
+                if (!r.YEAR || !r["TYPE OF CONTRIBUTION"]) return;
+                const vals = r["TYPE OF CONTRIBUTION"].split(",").map((s) => s.trim())
+                    .filter((v) => CONTRIB_VALS.includes(v));
+                vals.forEach((v) => { ctCounts[v][r.YEAR] = (ctCounts[v][r.YEAR] || 0) + 1; });
+            });
+            const ctDatasets = CONTRIB_VALS.map((v, i) => ({
+                label: v,
+                data: ctYears.map((y) => ctCounts[v][y] || 0),
+                borderColor: CONTRIB_COLORS[i],
+                backgroundColor: CONTRIB_COLORS[i] + "55",
+                fill: true,
+                tension: 0.3,
+                pointRadius: 4,
+            }));
+            renderStackedAreaChart(cid, ctYears, ctDatasets, "No. Articles");
+            break;
+        }
+
+        case "sankey": {
+            const SANKEY_TRENDS = TREND_ORDER.filter((t) => t !== "Reflections");
+            const SANKEY_DIMS = [
+                { col: "TREND",           vals: SANKEY_TRENDS },
+                { col: "APPROACH",        vals: ["Tool/Approach", "Agent"] },
+                { col: "SCOPE",           vals: ["Functional", "Non-Functional"] },
+                { col: "LLM ITERACTION",  vals: ["Pure Prompting", "Hybrid Prompting"] },
+                { col: "CONTEXTUAL INFO", vals: ["Fine-Tuning", "RAG"] },
+                { col: "FOCUS",           vals: ["Code/Procedure", "Data", "Optimization"] },
+            ];
+            const flowMaps = SANKEY_DIMS.slice(0, -1).map(() => ({}));
+            data.forEach((r) => {
+                const dimVals = SANKEY_DIMS.map((d) =>
+                    (r[d.col] || "").split(",").map((s) => s.trim()).filter((v) => d.vals.includes(v))
+                );
+                for (let i = 0; i < SANKEY_DIMS.length - 1; i++) {
+                    dimVals[i].forEach((from) => {
+                        dimVals[i + 1].forEach((to) => {
+                            const k = from + "|||" + to;
+                            flowMaps[i][k] = (flowMaps[i][k] || 0) + 1;
+                        });
+                    });
+                }
+            });
+            const links = flowMaps.flatMap((fMap) =>
+                Object.entries(fMap).map(([k, flow]) => { const [from, to] = k.split("|||"); return { from, to, flow }; })
+            );
+            // Colors matched to the Plotly reference
+            const NODE_COLORS = {
+                "Unit Test Generation":              "#6366f1",
+                "High-Level Test Gen":               "#f59e0b",
+                "Oracle Generation":                 "#10b981",
+                "Test Augmentation or Improvement":  "#ef4444",
+                "Test Configuration":                "#8b5cf6",
+                "Tool/Approach":                     "#0ea5e9",
+                "Agent":                             "#f97316",
+                "Functional":                        "#14b8a6",
+                "Non-Functional":                    "#ec4899",
+                "Pure Prompting":                    "#3b82f6",
+                "Hybrid Prompting":                  "#84cc16",
+                "Fine-Tuning":                       "#94a3b8",
+                "RAG":                               "#06b6d4",
+                "Code/Procedure":                    "#64748b",
+                "Data":                              "#a78bfa",
+                "Optimization":                      "#10b981",
+            };
+            const NODE_LABELS = {
+                "Unit Test Generation":              "Unit Test Gen",
+                "High-Level Test Gen":               "HL Test Gen",
+                "Oracle Generation":                 "Oracle Gen",
+                "Test Augmentation or Improvement":  "Test Aug.",
+                "Test Configuration":                "Test Config",
+                "Tool/Approach":                     "Tool/Framework",
+                "Code/Procedure":                    "Code/Procedure",
+            };
+            renderSankeyChart(cid, links, NODE_COLORS, NODE_LABELS);
+            break;
+        }
     }
 }
 
@@ -416,10 +627,7 @@ function renderCoauthorTable(data) {
 function renderTrendMatrix(data) {
     const htmlDiv = document.getElementById("grafica-html");
 
-    const TRENDS = [
-        "Unit Test Generation", "High-Level Test Gen", "Oracle Generation",
-        "Reflections", "Test Augmentation or Improvement", "Test Configuration",
-    ];
+    const TRENDS = TREND_ORDER;
 
     // Build co-occurrence matrix
     const matrix = {};
@@ -482,4 +690,89 @@ function renderBarFromCount(cid, data, field, label, exclude = []) {
 function renderPieFromCount(cid, data, field) {
     const c = countField(data, field);
     renderPieChart(cid, Object.keys(c), Object.values(c));
+}
+
+// ── Conference URLs (shared across charts) ──
+let _confUrls = null;
+
+function loadConfUrls() {
+    if (_confUrls) return Promise.resolve(_confUrls);
+    return fetch("data/conference_urls.json")
+        .then((r) => r.json())
+        .then((urls) => { _confUrls = urls; return urls; });
+}
+
+function confLink(name, year, urls) {
+    const key = year ? name + " " + year : name;
+    const url = urls ? urls[key] : null;
+    if (url) return `<a href="${url}" target="_blank" rel="noopener" style="font-weight:600">${name}</a>`;
+    return `<b>${name}</b>`;
+}
+
+// ── Conference Map (Leaflet) ──
+let _confCoords = null;
+let _confMapInstance = null;
+
+function renderConferenceMap(data) {
+    const htmlDiv = document.getElementById("grafica-html");
+
+    function build(coords, urls) {
+        // Extract address from BibTeX for each conference paper
+        const addrRegex = /address\s*=\s*\{([^}]+)\}/i;
+        const locations = {};
+        data.forEach((r) => {
+            const pub = (r["PUBLISHED INTO"] || "").trim();
+            if (!pub.startsWith("C:")) return;
+            const conf = pub.replace(/^C:\s*/, "");
+            const bib = r.BIBTEX || "";
+            const m = bib.match(addrRegex);
+            if (!m) return;
+            const addr = m[1].trim();
+            const c = coords[addr];
+            if (!c) return;
+            const key = c.lat + "," + c.lng;
+            if (!locations[key]) locations[key] = { lat: c.lat, lng: c.lng, papers: [], confs: new Set() };
+            locations[key].papers.push({ title: r.TITLE || r.ID, conf, year: r.YEAR });
+            locations[key].confs.add(conf);
+        });
+
+        // Build map container
+        htmlDiv.innerHTML = '<div id="conf-map" style="height:100%;min-height:400px;width:100%;border-radius:8px;"></div>';
+
+        if (_confMapInstance) { _confMapInstance.remove(); _confMapInstance = null; }
+        const map = L.map("conf-map").setView([20, 0], 2);
+        _confMapInstance = map;
+        L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+            attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>',
+            maxZoom: 18,
+        }).addTo(map);
+
+        const maxPapers = Math.max(1, ...Object.values(locations).map((l) => l.papers.length));
+
+        Object.values(locations).forEach((loc) => {
+            const radius = 8 + (loc.papers.length / maxPapers) * 22;
+            const confs = [...loc.confs].sort().map((c) => confLink(c, null, urls)).join(", ");
+            const paperList = loc.papers
+                .sort((a, b) => (a.year || "").localeCompare(b.year || ""))
+                .map((p) => `<li>${confLink(p.conf, p.year, urls)} (${p.year}) — ${p.title}</li>`)
+                .join("");
+            const popup = `<div style="max-height:200px;overflow:auto;">${confs} — ${loc.papers.length} paper(s)<ul style="margin:4px 0 0 16px;padding:0;font-size:0.85rem;">${paperList}</ul></div>`;
+            L.circleMarker([loc.lat, loc.lng], {
+                radius,
+                fillColor: "#00695c",
+                color: "#004d40",
+                weight: 1,
+                fillOpacity: 0.7,
+            }).addTo(map).bindPopup(popup);
+        });
+
+        // Fix Leaflet rendering in hidden containers
+        setTimeout(() => map.invalidateSize(), 200);
+    }
+
+    Promise.all([
+        _confCoords ? Promise.resolve(_confCoords) : fetch("data/conference_coords.json").then((r) => r.json()).then((c) => { _confCoords = c; return c; }),
+        loadConfUrls().catch(() => null),
+    ]).then(([coords, urls]) => build(coords, urls))
+      .catch((err) => { htmlDiv.innerHTML = '<p class="red-text">Could not load conference data: ' + err.message + '</p>'; });
 }
