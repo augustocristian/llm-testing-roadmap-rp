@@ -1,32 +1,97 @@
-[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.17144161.svg)](https://doi.org/10.5281/zenodo.17144160)
-# Replication package for *'A Research Roadmap on the Usage of Large Language Models in Software Testing Emerging from a Semi-Systematic Literature Review'*
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.17144160.svg)](https://doi.org/10.5281/zenodo.17144160)
+# Replication package for *'A Research Roadmap on the Usage of Large Language Models in Software Testing'*
 
-This repository contains the replication package of the paper *A Research Roadmap on the Usage of Large Language Models in Software Testing Emerging from a Semi-Systematic Literature Review*
-published at *TO-DO*
+This repository contains the replication package of the paper *A Research Roadmap on the Usage of Large Language Models in Software Testing*
+published at *TO-DO*.
 
-This replication package includes the raw data from the articles analyzed in the roadmap and an [interactive view of them hosted on GitHub Pages](https://augustocristian.github.io/llm-testing-roadmap-rp/). The raw dataset is a semicolon-separated CSV file available in the [/data](/data) directory, with a structure (columns) as follows:
-- **ID:** Internal reference used in the study.
-- **Title:** Title of the article.
-- **Year:** Publication year or when it was made available on arXiv.
-- **Key:** BibTeX key.
-- **Published into:** Name of the journal or conference where it is published (prefixed with `C:` for conferences or `J:` for journals).
-- **Publication type:** Type of publication: Conference, Journal, or arXiv.
-- **Bibtex:** BibTeX entry of the publication.
-- **Database:** Source database: ACM, IEEE, Elsevier, Springer, or Orig.
-- **Type of Contribution:** Type of contribution: Survey, Evaluation, or Research Contribution.
-- **Abstract:** Short abstract retrieved from the article.
-- **Trend:** Type of LLM-based testing: Unit Test Generation, High-Level Test Gen, Oracle Generation, Test Augmentation or Improvement, Test Configuration, and Reflections.
-- **LLM Interaction:** Type of LLM interaction: Pure Prompting or Hybrid Prompting.
-- **Domain Specific Knowledge:** How the LLM is improved with context: Prompt Engineering, RAG, or Fine-Tuning.
-- **Approach:** Type of approach: Tool/Approach or Agent.
-- **Scope:** Testing scope: Functional or Non-Functional.
-- **Focus:** refers if the approach is intended to generate Code/Procedure, Data or Optimization .
-- **Benchmark:** Name or identifier of the benchmark used.
-- **LLMs Used:** Name of the model/models used in the article.
-- **Evaluation Metric:** Name of the metrics used in evaluating the article.
-- **Tool:** Name of the tool proposed by the article.
+This replication package includes the raw data from the articles analyzed in the roadmap and an
+[interactive view of them hosted on GitHub Pages](https://augustocristian.github.io/llm-testing-roadmap-rp/).
+The replication package structure is depicted as follows:
 
-The replication package is also archived on [Zenodo](https://doi.org/10.5281/zenodo.17144160)
+```markdown
+📁 /
+├── 📜 .gitignore
+├── 📜 CITATION.cff
+├── 🤝 LICENSE
+├── 🏗️ pyproject.toml
+├── 🌐 index.html
+├── 📖 README.md
+│
+├── 📦 retrieval/
+│   ├── 🐍 core.py
+│   └── 🐍 __init__.py
+│
+├── 📁 dashboard/
+
+└── 📁 data/
+    ├── 𝄜 articlecorpus.csv
+    └── 𝄜 validation.csv
+```
+
+- `📦 retrieval` contains the Python scripts used retrieve the validation article corpus. It includes `🐍 core.py` with
+  the retrieval pipeline, which create into the `📁 data` the files with the result of each stage articles.
+
+- `📁 dashboard` contains the html, jss and css code responsible of the rendering and the different functionalities of the dashboard
+
+- `📁 data` contains:
+
+    - The roadmap dataset (`𝄜 articlecorpus.csv`) is a semicolon-separated CSV file, with a structure (columns) as follows:
+        - **ID:** Internal reference used in the study, `PXX` for the original corpus and `VXX` for validation.
+        - **Title:** Title of the article.
+        - **Year:** Publication year or when it was made available on arXiv.
+        - **Key:** BibTeX key.
+        - **Published into:** Name of the journal or conference where it is published (prefixed with `C:` for conferences or `J:` for journals).
+        - **Publication type:** Type of publication: Conference, Journal, or arXiv.
+        - **Bibtex:** BibTeX entry of the publication.
+        - **Database:** Source database: ACM, IEEE, Elsevier, Springer, or Orig.
+        - **Type of Contribution:** Type of contribution: Survey, Evaluation, or Research Contribution.
+        - **Abstract:** Short abstract retrieved from the article.
+        - **Trend:** Type of LLM-based testing: Unit Test Generation, High-Level Test Gen, Oracle Derivation, Test Augmentation or Improvement, Test Configuration or Execution, and Reflections.
+        - **LLM Interaction:** Type of LLM interaction: Pure Prompting or Hybrid Prompting.
+        - **Domain Specific Knowledge:** How the LLM is improved with context: None, RAG, or Fine-Tuning.
+        - **Approach:** Type of approach: Tool/Approach or Agent.
+        - **Scope:** Testing scope: Functional or Non-Functional.
+        - **Focus:** refers if the approach is intended to generate Code/Procedure, Data or Optimization .
+        - **Benchmark:** Name or identifier of the benchmark used.
+        - **LLMs Used:** Name of the model/models used in the article.
+        - **Evaluation Metric:** Name of the metrics used in evaluating the article.
+        - **Tool:** Name of the tool proposed by the article.
+
+    - The validation dataset (`𝄜 validation.csv`) is a semicolon-separated CSV file, with a structure (columns) as follows:
+        - **ID:** Internal reference used in the study.
+        - **Title:** Title of the article.
+        - **Authors:** Authors of the article.
+        - **Year:** Publication year.
+        - **DOI:** article DOI retrieved programmatically.
+        - **Abstract:** Short abstract retrieved from the article.
+        - **I/E:** result of the inclusion/exclusion criteria.
+
+The data of the replication package is also archived on [Zenodo](https://doi.org/10.5281/zenodo.17144160)
+
+## Treatment Replication Procedure
+
+To run the experimentation script provided in `📦 retrieval/`, Python version 3.12 or later is required. Follow these steps to execute the script:
+
+1. Navigate to the root of the repository and create a virtual environment:
+
+   ```bash
+   python -m venv venv
+   ```
+2. Activate the virtual environment:
+
+   * On Windows: `venv\Scripts\activate`
+   * On Linux/macOS: `source venv/bin/activate`
+
+3. Install and configure the project:
+
+   ```bash
+   pip install -e .
+   ```
+4. Run the experimentation script with:
+
+   ```bash
+   retrieval
+   ```
 
 ## Contributing
 
@@ -40,7 +105,7 @@ paper itself.
 
 ## Citing this work
 
-- Cristian Augusto, Antonia Bertolino, Guglielmo De Angelis, Francesca Lonetti and Jesús Morán, “A Research Roadmap on the Usage of Large Language Models in Software Testing Emerging from a Semi-Systematic Literature Review” in TO-DO   [https://doi.org/XXXXX](TO-DO) - [Full Paper available](TO-DO) - [Authors version](TO-DO) -
+- Cristian Augusto, Antonia Bertolino, Guglielmo De Angelis, Francesca Lonetti and Jesús Morán, “A Research Roadmap on the Usage of Large Language Models in Software Testing” in TO-DO - [TO-DO](https://doi.org/XXXXX) - [Full Paper available](TO-DO) - [Authors version](TO-DO) -
   [Download citation](TO-DO)
 
 ## Acknowledgments

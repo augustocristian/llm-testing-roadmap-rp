@@ -1,1 +1,12 @@
 .idea
+
+# Pipeline outputs
+data/research_papers_raw.csv
+data/research_papers_dedup.xlsx
+data/research_papers_filtered.xlsx
+data/research_papers_final.xlsx
+
+# venv folder
+venv/
+roadmap_retrieval_pipeline.egg-info/
+retrieval/__pycache__/

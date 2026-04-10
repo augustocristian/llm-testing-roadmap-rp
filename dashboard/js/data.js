@@ -1,24 +1,24 @@
-const CSV_PATH = "data/Papers.csv";
+const CSV_PATH = "data/articlecorpus.csv";
 
 const TREND_ORDER = [
-    "Unit Test Generation", "High-Level Test Gen", "Oracle Generation",
-    "Reflections", "Test Augmentation or Improvement", "Test Configuration",
+    "Unit Test Generation", "High-Level Test Gen", "Oracle Derivation",
+    "Reflections", "Test Augmentation or Improvement", "Test Configuration or Execution",
 ];
 const TREND_SHORT = {
     "Unit Test Generation":             "Unit Test Gen",
     "High-Level Test Gen":              "HL Test Gen",
-    "Oracle Generation":                "Oracle Gen",
+    "Oracle Derivation":                "Oracle Deriv.",
     "Reflections":                      "Reflections",
     "Test Augmentation or Improvement": "Test Aug.",
-    "Test Configuration":               "Test Config",
+    "Test Configuration or Execution":  "Test Config./Exec.",
 };
 const TREND_COLORS_MAP = {
     "Unit Test Generation":             "#0d47a1",
     "High-Level Test Gen":              "#1b5e20",
-    "Oracle Generation":                "#e65100",
+    "Oracle Derivation":                "#e65100",
     "Reflections":                      "#ad1457",
     "Test Augmentation or Improvement": "#4527a0",
-    "Test Configuration":               "#006064",
+    "Test Configuration or Execution":  "#006064",
 };
 
 function loadCSV(callback) {
@@ -93,7 +93,7 @@ function renderBubbleDashboard(data) {
         { col: "APPROACH", name: "Approach", vals: ["Tool/Approach", "Agent"], color: "rgba(99,102,241,0.82)", band: "rgba(99,102,241,0.06)" },
         { col: "SCOPE", name: "Scope", vals: ["Functional", "Non-Functional"], color: "rgba(20,184,166,0.82)", band: "rgba(20,184,166,0.06)" },
         { col: "LLM ITERACTION", name: "LLM Interaction", vals: ["Pure Prompting", "Hybrid Prompting"], color: "rgba(59,130,246,0.82)", band: "rgba(59,130,246,0.06)" },
-        { col: "CONTEXTUAL INFO", name: "Domain Specific Knowledge", vals: ["Fine-Tuning", "RAG"], color: "rgba(245,158,11,0.82)", band: "rgba(245,158,11,0.06)" },
+        { col: "CONTEXTUAL INFO", name: "Domain Specific Knowledge", vals: ["None", "Fine-Tuning", "RAG"], color: "rgba(245,158,11,0.82)", band: "rgba(245,158,11,0.06)" },
         { col: "FOCUS", name: "Focus", vals: ["Code/Procedure", "Data", "Optimization"], color: "rgba(236,72,153,0.82)", band: "rgba(236,72,153,0.06)" },
     ];
 
@@ -458,7 +458,7 @@ function renderInsightsChart(data, chartKey) {
 
         case "dsk_trend": {
             const dMap = {};
-            const DSK_VALS = ["Fine-Tuning", "RAG"];
+            const DSK_VALS = ["None", "Fine-Tuning", "RAG"];
             DSK_VALS.forEach((d) => { dMap[d] = {}; });
             data.forEach((r) => {
                 if (!r.TREND || !r["CONTEXTUAL INFO"]) return;
@@ -507,7 +507,7 @@ function renderInsightsChart(data, chartKey) {
                 { col: "APPROACH",        vals: ["Tool/Approach", "Agent"] },
                 { col: "SCOPE",           vals: ["Functional", "Non-Functional"] },
                 { col: "LLM ITERACTION",  vals: ["Pure Prompting", "Hybrid Prompting"] },
-                { col: "CONTEXTUAL INFO", vals: ["Fine-Tuning", "RAG"] },
+                { col: "CONTEXTUAL INFO", vals: ["None", "Fine-Tuning", "RAG"] },
                 { col: "FOCUS",           vals: ["Code/Procedure", "Data", "Optimization"] },
             ];
             const flowMaps = SANKEY_DIMS.slice(0, -1).map(() => ({}));
@@ -531,15 +531,16 @@ function renderInsightsChart(data, chartKey) {
             const NODE_COLORS = {
                 "Unit Test Generation":              "#6366f1",
                 "High-Level Test Gen":               "#f59e0b",
-                "Oracle Generation":                 "#10b981",
+                "Oracle Derivation":                 "#10b981",
                 "Test Augmentation or Improvement":  "#ef4444",
-                "Test Configuration":                "#8b5cf6",
+                "Test Configuration or Execution":   "#8b5cf6",
                 "Tool/Approach":                     "#0ea5e9",
                 "Agent":                             "#f97316",
                 "Functional":                        "#14b8a6",
                 "Non-Functional":                    "#ec4899",
                 "Pure Prompting":                    "#3b82f6",
                 "Hybrid Prompting":                  "#84cc16",
+                "None":                              "#cbd5e1",
                 "Fine-Tuning":                       "#94a3b8",
                 "RAG":                               "#06b6d4",
                 "Code/Procedure":                    "#64748b",
@@ -549,9 +550,9 @@ function renderInsightsChart(data, chartKey) {
             const NODE_LABELS = {
                 "Unit Test Generation":              "Unit Test Gen",
                 "High-Level Test Gen":               "HL Test Gen",
-                "Oracle Generation":                 "Oracle Gen",
+                "Oracle Derivation":                 "Oracle Deriv.",
                 "Test Augmentation or Improvement":  "Test Aug.",
-                "Test Configuration":                "Test Config",
+                "Test Configuration or Execution":   "Test Config./Exec.",
                 "Tool/Approach":                     "Tool/Framework",
                 "Code/Procedure":                    "Code/Procedure",
             };
@@ -651,10 +652,10 @@ function renderTrendMatrix(data) {
     const SHORT = {
         "Unit Test Generation": "Unit Test",
         "High-Level Test Gen": "HL Test",
-        "Oracle Generation": "Oracle",
+        "Oracle Derivation": "Oracle",
         "Reflections": "Reflections",
         "Test Augmentation or Improvement": "Augmentation",
-        "Test Configuration": "Config",
+        "Test Configuration or Execution": "Config./Exec.",
     };
 
     let html = '<div style="overflow-x:auto;padding:10px;"><table class="coauthor-table" style="min-width:500px;">';
@@ -697,7 +698,7 @@ let _confUrls = null;
 
 function loadConfUrls() {
     if (_confUrls) return Promise.resolve(_confUrls);
-    return fetch("data/conference_urls.json")
+    return fetch("dashboard/data/conference_urls.json")
         .then((r) => r.json())
         .then((urls) => { _confUrls = urls; return urls; });
 }
@@ -771,7 +772,7 @@ function renderConferenceMap(data) {
     }
 
     Promise.all([
-        _confCoords ? Promise.resolve(_confCoords) : fetch("data/conference_coords.json").then((r) => r.json()).then((c) => { _confCoords = c; return c; }),
+        _confCoords ? Promise.resolve(_confCoords) : fetch("dashboard/data/conference_coords.json").then((r) => r.json()).then((c) => { _confCoords = c; return c; }),
         loadConfUrls().catch(() => null),
     ]).then(([coords, urls]) => build(coords, urls))
       .catch((err) => { htmlDiv.innerHTML = '<p class="red-text">Could not load conference data: ' + err.message + '</p>'; });

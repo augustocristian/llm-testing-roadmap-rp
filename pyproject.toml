@@ -1,0 +1,40 @@
+[build-system]
+requires = ["setuptools", "setuptools-scm"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "roadmap-retrieval-pipeline"
+version = "2026.0.0"
+dependencies = [
+    "setuptools==82.0.1",
+    "requests==2.33.1",
+]
+
+requires-python = ">=3.12"
+
+authors = [
+    { name = "Cristian Augusto", email = "augustocristian@uniovi.es" },
+    { name = "Antonia Bertolino", email = "antonia.bertolino@gssi.it" },
+    { name = "Guglielmo De Angelis", email = "guglielmo.deangelis@iasi.cnr.it" },
+    { name = "Francesca Lonetti", email = "francesca.lonetti@isti.cnr.it" },
+    { name = "Jesús Morán", email = "moranjesus@uniovi.es" }
+]
+maintainers = [
+    { name = "Cristian Augusto", email = "augustocristian@uniovi.es" }
+]
+
+description = "Literature retrieval pipeline for 'A Research Roadmap on the Usage of Large Language Models in Software Testing'"
+readme = "README.md"
+license = { file = "LICENSE" }
+
+[project.scripts]
+retrieval = "retrieval.core:main"
+
+[tool.setuptools]
+packages = ["retrieval"]
+
+[project.urls]
+Homepage = "https://github.com/augustocristian/llm-testing-roadmap-rp"
+Repository = "https://github.com/augustocristian/llm-testing-roadmap-rp"
+"Bug Tracker" = "https://github.com/augustocristian/llm-testing-roadmap-rp/issues"
+

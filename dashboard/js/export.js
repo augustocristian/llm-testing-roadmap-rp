@@ -22,13 +22,13 @@ function initExport(data, headers) {
     // XLSX download (lazy-loads library)
     document.getElementById("download-xlsx").addEventListener("click", (e) => {
         e.preventDefault();
-        if (!window.XLSX) {
+        if (globalThis.XLSX) {
+            exportToXLSX();
+        } else {
             const script = document.createElement("script");
             script.src = "https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js";
             script.onload = () => exportToXLSX();
             document.body.appendChild(script);
-        } else {
-            exportToXLSX();
         }
     });
 }
@@ -36,6 +36,6 @@ function initExport(data, headers) {
 function exportToXLSX() {
     const ws = XLSX.utils.json_to_sheet(globalDataArray, { header: globalHeaders });
     const wb = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(wb, ws, "Papers");
-    XLSX.writeFile(wb, "Papers.xlsx");
+    XLSX.utils.book_append_sheet(wb, ws, "articlecorpus");
+    XLSX.writeFile(wb, "articlecorpus.xlsx");
 }

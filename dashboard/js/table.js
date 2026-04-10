@@ -122,6 +122,7 @@ const INTERACTION_COLORS = {
     "Hybrid Prompting": { bg: "#1565c0", fg: "#fff" },
 };
 const CONTEXT_COLORS = {
+    "None":               { bg: "#eceff1", fg: "#546e7a" },
     "RAG":                { bg: "#fff3e0", fg: "#e65100" },
     "Fine-Tuning":        { bg: "#fce4ec", fg: "#ad1457" },
 };
@@ -146,10 +147,10 @@ const FOCUS_COLORS = {
 const TREND_COLORS = {
     "Unit Test Generation":             { bg: "#e3f2fd", fg: "#0d47a1" },
     "High-Level Test Gen":              { bg: "#e8f5e9", fg: "#1b5e20" },
-    "Oracle Generation":                { bg: "#fff3e0", fg: "#e65100" },
+    "Oracle Derivation":                { bg: "#fff3e0", fg: "#e65100" },
     "Reflections":                      { bg: "#fce4ec", fg: "#ad1457" },
     "Test Augmentation or Improvement": { bg: "#ede7f6", fg: "#4527a0" },
-    "Test Configuration":               { bg: "#e0f7fa", fg: "#006064" },
+    "Test Configuration or Execution":  { bg: "#e0f7fa", fg: "#006064" },
 };
 const YEAR_COLORS = {
     "2020": { bg: "#fce4ec", fg: "#ad1457" },
@@ -161,6 +162,7 @@ const YEAR_COLORS = {
     "2026": { bg: "#e0f7fa", fg: "#006064" },
 };
 const VENUE_COLORS = {
+    // ── Core SE conferences ──
     "ICSE":              { bg: "#e3f2fd", fg: "#0d47a1" },
     "FSE":               { bg: "#e8f5e9", fg: "#1b5e20" },
     "ISSTA":             { bg: "#fff3e0", fg: "#e65100" },
@@ -179,6 +181,73 @@ const VENUE_COLORS = {
     "QRS":               { bg: "#fce4ec", fg: "#880e4f" },
     "QUATIC":            { bg: "#e8eaf6", fg: "#1a237e" },
     "RE":                { bg: "#f9fbe7", fg: "#827717" },
+    "ICSME":             { bg: "#fff8e1", fg: "#f57f17" },
+    "ICoDSE":            { bg: "#e0f2f1", fg: "#00695c" },
+    "DSA":               { bg: "#e8eaf6", fg: "#1a237e" },
+    "ICCS":              { bg: "#e3f2fd", fg: "#0277bd" },
+    "COMPSAC":           { bg: "#e3f2fd", fg: "#1565c0" },
+    "FORGE":             { bg: "#e0f7fa", fg: "#00838f" },
+    "Internetware":      { bg: "#e0f2f1", fg: "#00796b" },
+    "AIware":            { bg: "#e8eaf6", fg: "#283593" },
+    // ── Security conferences ──
+    "TrustCom":          { bg: "#ffebee", fg: "#c62828" },
+    "APESEC":            { bg: "#fce4ec", fg: "#880e4f" },
+    "USENIX Security":   { bg: "#ffebee", fg: "#b71c1c" },
+    "PST":               { bg: "#ffebee", fg: "#880e4f" },
+    // ── AI / ML / NLP conferences ──
+    "GECCO":             { bg: "#ede7f6", fg: "#6a1b9a" },
+    "NAACL":             { bg: "#f3e5f5", fg: "#7b1fa2" },
+    "LREC-COLING":       { bg: "#e8eaf6", fg: "#3949ab" },
+    "CVPR":              { bg: "#e8eaf6", fg: "#283593" },
+    "MLCAD":             { bg: "#ede7f6", fg: "#4527a0" },
+    "ICCAD":             { bg: "#e3f2fd", fg: "#1a237e" },
+    "IWANN":             { bg: "#ede7f6", fg: "#512da8" },
+    "FLLM":              { bg: "#f3e5f5", fg: "#6a1b9a" },
+    "Cyber-AI":          { bg: "#e8eaf6", fg: "#283593" },
+    // ── HCI / UI conferences ──
+    "UIST":              { bg: "#fce4ec", fg: "#ad1457" },
+    "IUI":               { bg: "#fff3e0", fg: "#e65100" },
+    "ICMI":              { bg: "#fff3e0", fg: "#bf360c" },
+    // ── Systems / distributed / IoT ──
+    "ICDCS":             { bg: "#e3f2fd", fg: "#0288d1" },
+    "IROS":              { bg: "#e0f2f1", fg: "#004d40" },
+    "IoT":               { bg: "#e0f2f1", fg: "#006064" },
+    "ICWS":              { bg: "#e3f2fd", fg: "#01579b" },
+    "MESA":              { bg: "#e8eaf6", fg: "#3f51b5" },
+    "DSC":               { bg: "#e3f2fd", fg: "#0d47a1" },
+    "DTPI":              { bg: "#e8eaf6", fg: "#3f51b5" },
+    "CSR":               { bg: "#e3f2fd", fg: "#0288d1" },
+    "ICWIHI":            { bg: "#e3f2fd", fg: "#1565c0" },
+    "INMIC":             { bg: "#e3f2fd", fg: "#0277bd" },
+    // ── Biomedical / signal processing ──
+    "CISP-BMEI":         { bg: "#e8f5e9", fg: "#2e7d32" },
+    "ISMSIT":            { bg: "#e8eaf6", fg: "#3f51b5" },
+    // ── General / regional conferences ──
+    "UBMK":              { bg: "#f3e5f5", fg: "#7b1fa2" },
+    "NISS":              { bg: "#e8eaf6", fg: "#455a64" },
+    "ICECCME":           { bg: "#e3f2fd", fg: "#1565c0" },
+    "ASYU":              { bg: "#ede7f6", fg: "#512da8" },
+    "SBQS":              { bg: "#e8f5e9", fg: "#388e3c" },
+    "ICIIBMS":           { bg: "#e3f2fd", fg: "#0288d1" },
+    "GCAT":              { bg: "#f9fbe7", fg: "#558b2f" },
+    "ICEBE":             { bg: "#e8eaf6", fg: "#1565c0" },
+    "ICIC":              { bg: "#e3f2fd", fg: "#0277bd" },
+    "FASeG":             { bg: "#f1f8e9", fg: "#558b2f" },
+    "ISCTech":           { bg: "#e0f2f1", fg: "#00897b" },
+    "ComManTel":         { bg: "#e3f2fd", fg: "#1976d2" },
+    "JCSSE":             { bg: "#e3f2fd", fg: "#0288d1" },
+    "ICoCICs":           { bg: "#e0f2f1", fg: "#00796b" },
+    "ITMS":              { bg: "#e8eaf6", fg: "#3f51b5" },
+    "SITA":              { bg: "#e3f2fd", fg: "#1565c0" },
+    "ISWA":              { bg: "#e8f5e9", fg: "#2e7d32" },
+    "CSAE":              { bg: "#e3f2fd", fg: "#0288d1" },
+    "ICSSS":             { bg: "#e3f2fd", fg: "#0d47a1" },
+    "STA":               { bg: "#e8f5e9", fg: "#2e7d32" },
+    "ICACCP":            { bg: "#e3f2fd", fg: "#1565c0" },
+    "R10-HTC":           { bg: "#e8f5e9", fg: "#2e7d32" },
+    "ICRITO":            { bg: "#e3f2fd", fg: "#0277bd" },
+    "ICTIS":             { bg: "#e3f2fd", fg: "#0288d1" },
+    // ── Journals ──
     "TSE":               { bg: "#e3f2fd", fg: "#1565c0" },
     "TOSEM":             { bg: "#e8f5e9", fg: "#2e7d32" },
     "IST":               { bg: "#fff3e0", fg: "#ef6c00" },
@@ -186,11 +255,22 @@ const VENUE_COLORS = {
     "Emp. Soft. Eng.":   { bg: "#fce4ec", fg: "#c62828" },
     "IEEE Access":       { bg: "#e0f7fa", fg: "#00695c" },
     "IEEE Soft.":        { bg: "#e1f5fe", fg: "#0277bd" },
+    "IEEE Software":     { bg: "#e1f5fe", fg: "#0277bd" },
+    "IEEE Comp.":        { bg: "#e3f2fd", fg: "#0d47a1" },
+    "IEEE Vehic. Tec. Mag.": { bg: "#e3f2fd", fg: "#1565c0" },
     "ACM Soft. Eng.":    { bg: "#f3e5f5", fg: "#7b1fa2" },
     "Proc. ACM Softw. Eng": { bg: "#e8eaf6", fg: "#303f9f" },
-    "Aut. Soft. Eng":    { bg: "#fff8e1", fg: "#f9a825" },
+    "Aut. Soft. Eng.":   { bg: "#fff8e1", fg: "#f9a825" },
     "Com. ACM":          { bg: "#efebe9", fg: "#3e2723" },
+    "CACM":              { bg: "#efebe9", fg: "#3e2723" },
     "Comp. Std. and Int.": { bg: "#f1f8e9", fg: "#558b2f" },
+    "FGCS":              { bg: "#e0f2f1", fg: "#004d40" },
+    "Sci. Reports.":     { bg: "#f9fbe7", fg: "#558b2f" },
+    "CJA":               { bg: "#e3f2fd", fg: "#0277bd" },
+    "Auto. Innovation":  { bg: "#e0f2f1", fg: "#00796b" },
+    "T-ITS":             { bg: "#e8f5e9", fg: "#2e7d32" },
+    "Proc. Comp. Sci.":  { bg: "#e8eaf6", fg: "#303f9f" },
+    // ── Preprints / catch-all ──
     "arXiv":             { bg: "#ffcdd2", fg: "#b71c1c" },
     "Other":             { bg: "#eceff1", fg: "#37474f" },
 };
@@ -211,7 +291,7 @@ const PER_VALUE_MAPS = {
 function chipHtml(val, colName, url) {
     const valMap = PER_VALUE_MAPS[colName];
     const c = valMap
-        ? (valMap[val] || { bg: "#e0e0e0", fg: "#333" })
+        ? (valMap[val] || { bg: "#eceff1", fg: "#546e7a" })
         : (CHIP_COLORS[colName] || { bg: "#e8f5e9", fg: "#2e7d32" });
     const chip = `<span class="table-chip" style="background:${c.bg};color:${c.fg}">${val}</span>`;
     if (url) return `<a href="${url}" target="_blank" rel="noopener" style="text-decoration:none">${chip}</a>`;

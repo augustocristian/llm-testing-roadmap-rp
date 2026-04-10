@@ -55,6 +55,16 @@
     color: #616161;
     margin-top: 2px;
 }
+.affil-link {
+    color: inherit;
+    text-decoration: none;
+    border-bottom: 1px dashed #bbb;
+    transition: color .15s, border-color .15s;
+}
+.affil-link:hover {
+    color: #00796b;
+    border-color: #00796b;
+}
 
 /* ── Header action buttons ── */
 .header-actions {
@@ -857,14 +867,14 @@
    DARK MODE
    ======================================== */
 body.dark-mode {
-    background: #1a1a2e !important;
+    background: #1a1a1a !important;
     color: #e0e0e0 !important;
 }
 body.dark-mode .container {
     color: #e0e0e0;
 }
 body.dark-mode .main-title {
-    color: #4db6ac !important;
+    color: #e0f2f1 !important;
 }
 body.dark-mode .authors-block {
     color: #ccc;
@@ -876,6 +886,13 @@ body.dark-mode .author-link {
 body.dark-mode .author-link:hover {
     color: #4db6ac;
 }
+body.dark-mode .affil-link {
+    color: #b2dfdb;
+    border-bottom-color: #555;
+}
+body.dark-mode .affil-link:hover {
+    color: #4db6ac;
+}
 body.dark-mode .affiliations-block,
 body.dark-mode .acks-block {
     color: #aaa;
@@ -884,14 +901,14 @@ body.dark-mode .divider {
     background-color: #333 !important;
 }
 body.dark-mode .mini-nav {
-    background: #1a1a2e;
+    background: #1a1a1a;
     border-bottom-color: #333;
 }
 body.dark-mode .mini-nav-link {
     color: #aaa;
 }
 body.dark-mode .mini-nav-link:hover {
-    background: #2a2a4a;
+    background: #2e2e2e;
     color: #4db6ac;
 }
 body.dark-mode .mini-nav-link.active {
@@ -899,19 +916,19 @@ body.dark-mode .mini-nav-link.active {
     color: #fff;
 }
 body.dark-mode .filter-bar {
-    background: #16213e;
+    background: #242424;
     border-color: #333;
 }
 body.dark-mode .filter-label {
     color: #aaa;
 }
 body.dark-mode .corpus-btn {
-    background-color: #16213e !important;
+    background-color: #242424 !important;
     color: #4db6ac !important;
     border-color: #444;
 }
 body.dark-mode .corpus-btn:hover {
-    background-color: #2a2a4a !important;
+    background-color: #2e2e2e !important;
 }
 body.dark-mode .corpus-btn.active {
     background-color: #00796b !important;
@@ -937,7 +954,7 @@ body.dark-mode .stat-arxiv {
     color: #ef9a9a !important;
 }
 body.dark-mode .card {
-    background-color: #16213e !important;
+    background-color: #242424 !important;
     box-shadow: 0 1px 4px rgba(0,0,0,0.3);
 }
 body.dark-mode .card-title-sm {
@@ -951,16 +968,16 @@ body.dark-mode #tabla thead th {
     border-bottom-color: #444;
 }
 body.dark-mode #tabla tbody tr:hover {
-    background-color: #2a2a4a !important;
+    background-color: #2e2e2e !important;
 }
 body.dark-mode #tabla tbody tr {
-    background-color: #16213e;
+    background-color: #242424;
 }
 body.dark-mode #tabla tbody tr:nth-child(odd) {
-    background-color: #1a1a3a;
+    background-color: #1e1e1e;
 }
 body.dark-mode .dataTables_wrapper .dataTables_filter input {
-    background-color: #2a2a4a;
+    background-color: #2e2e2e;
     color: #ddd;
     border-color: #444;
 }
@@ -975,18 +992,18 @@ body.dark-mode .green-btn:hover {
     background: #4db6ac;
 }
 body.dark-mode .toolbar-select {
-    background-color: #2a2a4a !important;
+    background-color: #2e2e2e !important;
     color: #ddd !important;
     border-color: #444 !important;
 }
 body.dark-mode .abstract-search-input {
-    background: #2a2a4a !important;
+    background: #2e2e2e !important;
     color: #ddd !important;
     border-color: #444 !important;
 }
 body.dark-mode .col-filter-dropdown,
 body.dark-mode .col-vis-dropdown {
-    background: #16213e;
+    background: #242424;
     border-color: #444;
 }
 body.dark-mode .col-filter-item,
@@ -995,20 +1012,20 @@ body.dark-mode .col-vis-item {
 }
 body.dark-mode .col-filter-item:hover,
 body.dark-mode .col-vis-item:hover {
-    background: #2a2a4a;
+    background: #2e2e2e;
 }
 body.dark-mode .col-filter-btn {
-    background: #2a2a4a;
+    background: #2e2e2e;
     border-color: #444;
     color: #999;
 }
 body.dark-mode .col-filter-search {
-    background: #2a2a4a;
+    background: #2e2e2e;
     color: #ddd;
     border-color: #444;
 }
 body.dark-mode .modal {
-    background-color: #16213e !important;
+    background-color: #242424 !important;
     color: #ddd !important;
 }
 body.dark-mode .modal h4,
@@ -1017,7 +1034,7 @@ body.dark-mode .modal h6 {
     color: #ddd !important;
 }
 body.dark-mode .modal .modal-footer {
-    background-color: #1a1a3a !important;
+    background-color: #1e1e1e !important;
     border-top-color: #333 !important;
 }
 body.dark-mode .modal .btn-flat {
@@ -1025,12 +1042,12 @@ body.dark-mode .modal .btn-flat {
 }
 body.dark-mode #modal-bibtex-content,
 body.dark-mode #citation-content {
-    background: #1a1a3a;
+    background: #1e1e1e;
     color: #ddd;
     border-color: #444;
 }
 body.dark-mode .page-footer-custom {
-    background: #16213e;
+    background: #242424;
     border-top-color: #333;
 }
 body.dark-mode .footer-title {
@@ -1049,7 +1066,7 @@ body.dark-mode .year-label {
     color: #4db6ac;
 }
 body.dark-mode #loading-overlay {
-    background: #1a1a2e;
+    background: #1a1a1a;
 }
 body.dark-mode #loading-overlay p {
     color: #4db6ac;
@@ -1064,7 +1081,7 @@ body.dark-mode .toolbar-label {
     color: #aaa;
 }
 body.dark-mode .summary-item {
-    background: #1a1a3a;
+    background: #1e1e1e;
     border-color: #333;
 }
 body.dark-mode .summary-value {
@@ -1081,18 +1098,18 @@ body.dark-mode .chart-download-btn {
     border-color: #444;
 }
 body.dark-mode .chart-download-btn:hover {
-    background: #2a2a4a;
+    background: #2e2e2e;
     color: #4db6ac;
 }
 body.dark-mode .chart-dl-menu {
-    background: #16213e;
+    background: #242424;
     border-color: #444;
 }
 body.dark-mode .chart-dl-menu a {
     color: #ddd;
 }
 body.dark-mode .chart-dl-menu a:hover {
-    background: #2a2a4a;
+    background: #2e2e2e;
     color: #4db6ac;
 }
 body.dark-mode .wc-word {
@@ -1392,7 +1409,7 @@ body.dark-mode .card-collapse-btn:hover {
     opacity: 1;
 }
 body.dark-mode .active-filter-chip {
-    background: #2a2a4a;
+    background: #2e2e2e;
     color: #4db6ac;
 }
 
@@ -1420,7 +1437,7 @@ body.dark-mode .active-filter-chip {
     display: block;
 }
 body.dark-mode .title-tooltip {
-    background: #16213e;
+    background: #242424;
     color: #ddd;
     border-color: #444;
 }
@@ -1501,7 +1518,7 @@ body.dark-mode .search-highlight {
         text-transform: uppercase;
     }
     body.dark-mode .mobile-card-view #tabla tbody tr {
-        background: #16213e;
+        background: #242424;
         border-color: #333;
     }
 }

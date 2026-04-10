@@ -399,7 +399,7 @@ function initExportFiltered(data, headers) {
         const url = URL.createObjectURL(blob);
         const a = document.createElement("a");
         a.href = url;
-        a.download = "Papers_filtered.csv";
+        a.download = "articlecorpus_filtered.csv";
         document.body.appendChild(a);
         a.click();
         a.remove();
@@ -570,7 +570,7 @@ function initBulkBibtex(data, headers) {
         const url = URL.createObjectURL(blob);
         const a = document.createElement("a");
         a.href = url;
-        a.download = "Papers_filtered.bib";
+        a.download = "articlecorpus_filtered.bib";
         document.body.appendChild(a);
         a.click();
         a.remove();

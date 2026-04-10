@@ -16,7 +16,7 @@ authors:
   - family-names: "Morán"
     given-names: "Jesús"
     orcid: "https://orcid.org/0000-0002-7544-3901"
-title: "Replication package for 'A Research Roadmap on the Usage of Large Language Models in Software Testing Emerging from a Semi-Systematic Literature Review'"
+title: "Replication package for 'A Research Roadmap on the Usage of Large Language Models in Software Testing'"
 version: "1.0"
 doi: "TO-DO"
 date-released: "2026-04-15"
@@ -39,7 +39,7 @@ preferred-citation:
     - family-names: "Morán"
       given-names: "Jesús"
       orcid: "https://orcid.org/0000-0002-7544-3901"
-  title: "A Research Roadmap on the Usage of Large Language Models in Software Testing Emerging from a Semi-Systematic Literature Review"
+  title: "A Research Roadmap on the Usage of Large Language Models in Software Testing"
   year: 2026
   journal: 
     name: "TO-DO"

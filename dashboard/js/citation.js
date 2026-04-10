@@ -1,3 +1,28 @@
+function formatBibTeX(data) {
+    if (!data) return "";
+    const authors = data.authors.map((a) => `${a.family}, ${a.given}`).join(" and ");
+    return `@article{Augusto2026,
+  author    = {${authors}},
+  title     = {${data.title}},
+  journal   = {${data.journal}},
+  year      = {${data.year}},
+  volume    = {${data.volume}},
+  number    = {${data.issue}},
+  pages     = {${data.pages}},
+  publisher = {${data.publisher}},
+  doi       = {${data.doi}}
+}`;
+}
+
+function formatCitationAPA(data) {
+    if (!data) return "";
+    const authors = data.authors
+        .map((a) => `${a.family}, ${a.given[0]}.`)
+        .join(", ")
+        .replace(/, ([^,]*)$/, ", & $1");
+    return `${authors} (${data.year}). ${data.title}. <i>${data.journal}</i>, ${data.volume}(${data.issue}), ${data.pages}. ${data.publisher}. https://doi.org/${data.doi}`;
+}
+
 function initCitation() {
     const citationModalElem = document.getElementById("modal-citation");
     const citationModal = M.Modal.init(citationModalElem);
@@ -10,7 +35,10 @@ function initCitation() {
     let citationData = null;
 
     fetch("CITATION.cff")
-        .then((res) => res.text())
+        .then((res) => {
+            if (!res.ok) throw new Error(res.status);
+            return res.text();
+        })
         .then((text) => {
             const cff = jsyaml.load(text);
             const pc = cff["preferred-citation"];
@@ -33,31 +61,6 @@ function initCitation() {
         })
         .catch((err) => console.error("Error loading CITATION.cff:", err));
 
-    function formatBibTeX(data) {
-        if (!data) return "";
-        const authors = data.authors.map((a) => `${a.family}, ${a.given}`).join(" and ");
-        return `@article{Augusto2026,
-  author    = {${authors}},
-  title     = {${data.title}},
-  journal   = {${data.journal}},
-  year      = {${data.year}},
-  volume    = {${data.volume}},
-  number    = {${data.issue}},
-  pages     = {${data.pages}},
-  publisher = {${data.publisher}},
-  doi       = {${data.doi}}
-}`;
-    }
-
-    function formatCitationAPA(data) {
-        if (!data) return "";
-        const authors = data.authors
-            .map((a) => `${a.family}, ${a.given[0]}.`)
-            .join(", ")
-            .replace(/, ([^,]*)$/, ", & $1");
-        return `${authors} (${data.year}). ${data.title}. <i>${data.journal}</i>, ${data.volume}(${data.issue}), ${data.pages}. ${data.publisher}. https://doi.org/${data.doi}`;
-    }
-
     bibtexBtn.addEventListener("click", (e) => {
         e.preventDefault();
         if (!citationData) return alert("Citation not loaded yet.");
@@ -69,7 +72,7 @@ function initCitation() {
         tmpLink.download = "Augusto2026.bib";
         document.body.appendChild(tmpLink);
         tmpLink.click();
-        document.body.removeChild(tmpLink);
+        tmpLink.remove();
         setTimeout(() => URL.revokeObjectURL(url), 1000);
     });
 
