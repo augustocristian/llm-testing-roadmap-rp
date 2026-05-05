@@ -127,7 +127,7 @@ const CONTEXT_COLORS = {
     "Fine-Tuning":        { bg: "#fce4ec", fg: "#ad1457" },
 };
 const APPROACH_COLORS = {
-    "Tool/Approach": { bg: "#ede7f6", fg: "#4527a0" },
+    "Tool/Framework": { bg: "#ede7f6", fg: "#4527a0" },
     "Agent":         { bg: "#4527a0", fg: "#fff" },
 };
 const SCOPE_COLORS = {

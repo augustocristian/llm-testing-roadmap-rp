@@ -1,4 +1,5 @@
-[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.17144160.svg)](https://doi.org/10.5281/zenodo.17144160)
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.20039989.svg)](https://doi.org/10.5281/zenodo.20039989)
+
 # Replication package for *'A Research Roadmap on the Usage of Large Language Models in Software Testing'*
 
 This repository contains the replication package of the paper *A Research Roadmap on the Usage of Large Language Models in Software Testing*
@@ -49,7 +50,7 @@ The replication package structure is depicted as follows:
         - **Trend:** Type of LLM-based testing: Unit Test Generation, High-Level Test Gen, Oracle Derivation, Test Augmentation or Improvement, Test Configuration or Execution, and Reflections.
         - **LLM Interaction:** Type of LLM interaction: Pure Prompting or Hybrid Prompting.
         - **Domain Specific Knowledge:** How the LLM is improved with context: None, RAG, or Fine-Tuning.
-        - **Approach:** Type of approach: Tool/Approach or Agent.
+        - **Approach:** Type of approach: Tool/Framework or Agent.
         - **Scope:** Testing scope: Functional or Non-Functional.
         - **Focus:** refers if the approach is intended to generate Code/Procedure, Data or Optimization .
         - **Benchmark:** Name or identifier of the benchmark used.

@@ -90,7 +90,7 @@ function updateStats(data) {
 
 function renderBubbleDashboard(data) {
     const DIMS = [
-        { col: "APPROACH", name: "Approach", vals: ["Tool/Approach", "Agent"], color: "rgba(99,102,241,0.82)", band: "rgba(99,102,241,0.06)" },
+        { col: "APPROACH", name: "Approach", vals: ["Tool/Framework", "Agent"], color: "rgba(99,102,241,0.82)", band: "rgba(99,102,241,0.06)" },
         { col: "SCOPE", name: "Scope", vals: ["Functional", "Non-Functional"], color: "rgba(20,184,166,0.82)", band: "rgba(20,184,166,0.06)" },
         { col: "LLM ITERACTION", name: "LLM Interaction", vals: ["Pure Prompting", "Hybrid Prompting"], color: "rgba(59,130,246,0.82)", band: "rgba(59,130,246,0.06)" },
         { col: "CONTEXTUAL INFO", name: "Domain Specific Knowledge", vals: ["None", "Fine-Tuning", "RAG"], color: "rgba(245,158,11,0.82)", band: "rgba(245,158,11,0.06)" },
@@ -504,7 +504,7 @@ function renderInsightsChart(data, chartKey) {
             const SANKEY_TRENDS = TREND_ORDER.filter((t) => t !== "Reflections");
             const SANKEY_DIMS = [
                 { col: "TREND",           vals: SANKEY_TRENDS },
-                { col: "APPROACH",        vals: ["Tool/Approach", "Agent"] },
+                { col: "APPROACH",        vals: ["Tool/Framework", "Agent"] },
                 { col: "SCOPE",           vals: ["Functional", "Non-Functional"] },
                 { col: "LLM ITERACTION",  vals: ["Pure Prompting", "Hybrid Prompting"] },
                 { col: "CONTEXTUAL INFO", vals: ["None", "Fine-Tuning", "RAG"] },
@@ -534,7 +534,7 @@ function renderInsightsChart(data, chartKey) {
                 "Oracle Derivation":                 "#10b981",
                 "Test Augmentation or Improvement":  "#ef4444",
                 "Test Configuration or Execution":   "#8b5cf6",
-                "Tool/Approach":                     "#0ea5e9",
+                "Tool/Framework":                     "#0ea5e9",
                 "Agent":                             "#f97316",
                 "Functional":                        "#14b8a6",
                 "Non-Functional":                    "#ec4899",
@@ -553,7 +553,7 @@ function renderInsightsChart(data, chartKey) {
                 "Oracle Derivation":                 "Oracle Deriv.",
                 "Test Augmentation or Improvement":  "Test Aug.",
                 "Test Configuration or Execution":   "Test Config./Exec.",
-                "Tool/Approach":                     "Tool/Framework",
+                "Tool/Framework":                     "Tool/Framework",
                 "Code/Procedure":                    "Code/Procedure",
             };
             renderSankeyChart(cid, links, NODE_COLORS, NODE_LABELS);

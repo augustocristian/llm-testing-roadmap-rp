@@ -150,13 +150,17 @@ document.addEventListener("DOMContentLoaded", () => {
             updateHash(activeCorpus, activeYearRange, document.getElementById("graficoSelect").value);
         }
 
-        // Init year slider
+        // Init year slider — rangeMax must be strictly greater than rangeMin
+        // to avoid noUiSlider locking up when all data falls in a single year.
         const sliderEl = document.getElementById("yearSlider");
+        const rangeMin = minYear;
+        const rangeMax = Math.max(maxYear, minYear + 1);
         noUiSlider.create(sliderEl, {
             start: activeYearRange,
             connect: true,
             step: 1,
-            range: { min: minYear, max: maxYear },
+            margin: 0,
+            range: { min: rangeMin, max: rangeMax },
             format: {
                 to: (v) => Math.round(v),
                 from: (v) => Number(v),

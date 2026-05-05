@@ -131,7 +131,7 @@
           </div>
         </div>
         <div class="filter-group year-filter-group">
-          <span class="filter-label">Year:</span>
+          <span class="filter-label">Filter by Year:</span>
           <span class="year-label" id="yearMinLabel">2020</span>
           <div id="yearSlider" class="year-slider"></div>
           <span class="year-label" id="yearMaxLabel">2026</span>
@@ -202,10 +202,10 @@
               <div class="chart-header-row">
                 <span class="card-title card-title-sm">Testing Trends vs LLM Interaction, Domain Specific Knowledge, Scope & Approach</span>
                 <div class="chart-dl-wrap">
-                  <button class="chart-download-btn" data-canvas="chart-bubble" title="Download chart">&#128247;</button>
+                  <button class="chart-download-btn" data-canvas="chart-bubble" title="Export chart as PNG or SVG">&#11015; Export</button>
                   <div class="chart-dl-menu">
-                    <a class="chart-dl-png" data-canvas="chart-bubble">PNG</a>
-                    <a class="chart-dl-svg" data-canvas="chart-bubble">SVG</a>
+                    <a class="chart-dl-png" data-canvas="chart-bubble">&#11015; PNG</a>
+                    <a class="chart-dl-svg" data-canvas="chart-bubble">&#11015; SVG</a>
                   </div>
                 </div>
               </div>
@@ -230,10 +230,10 @@
                   <div class="chart-header-row">
                     <span class="card-title card-title-sm">Additional Insights</span>
                     <div class="chart-dl-wrap">
-                      <button class="chart-download-btn" data-canvas="grafica" title="Download chart">&#128247;</button>
+                      <button class="chart-download-btn" data-canvas="grafica" title="Export chart as PNG or SVG">&#11015; Export</button>
                       <div class="chart-dl-menu">
-                        <a class="chart-dl-png" data-canvas="grafica">PNG</a>
-                        <a class="chart-dl-svg" data-canvas="grafica">SVG</a>
+                        <a class="chart-dl-png" data-canvas="grafica">&#11015; PNG</a>
+                        <a class="chart-dl-svg" data-canvas="grafica">&#11015; SVG</a>
                       </div>
                     </div>
                   </div>
@@ -327,6 +327,7 @@
             <!-- Active filter chips -->
             <div id="activeFilterChips" class="active-filter-chips" style="display:none;"></div>
             <div class="card-collapsible">
+              <!-- NOSONAR: <th> headers are injected dynamically by DataTables -->
               <table id="tabla" class="striped highlight responsive-table"></table>
             </div>
           </div>
@@ -357,8 +358,9 @@
   <!-- Modal for abstract -->
   <div id="modal-abstract" class="modal">
     <div class="modal-content">
-      <h4 id="modal-abstract-title"></h4>
-      <h6 id="modal-abstract-authors" style="color:#555;margin-top:0.8rem;"></h6>
+      <button class="modal-close modal-close-x" aria-label="Close">&#10005;</button>
+      <h4 id="modal-abstract-title" aria-live="polite"><span class="sr-only">Article title</span></h4>
+      <h6 id="modal-abstract-authors" aria-live="polite" style="color:#555;margin-top:0.8rem;"><span class="sr-only">Authors</span></h6>
       <p id="modal-abstract-venue" style="font-style:italic;color:#555;"></p>
       <h6 style="margin-top:1.2rem;font-weight:600;">Abstract</h6>
       <p id="modal-abstract-content"></p>
@@ -369,18 +371,17 @@
     </div>
     <div class="modal-footer">
       <a id="modal-abstract-link" href="#" target="_blank" class="waves-effect waves-green btn-flat" style="display:none;">Published version</a>
-      <a href="#!" class="modal-close waves-effect waves-green btn-flat">Close</a>
     </div>
   </div>
 
   <!-- BibTeX Modal -->
   <div id="modal-bibtex" class="modal">
     <div class="modal-content">
+      <button class="modal-close modal-close-x" aria-label="Close">&#10005;</button>
       <h5 id="modal-bibtex-title">BibTeX</h5>
       <pre id="modal-bibtex-content" style="white-space:pre-wrap;font-size:0.85rem;font-family:Consolas,'Liberation Mono',monospace;background:#f5f5f5;padding:12px;border:1px solid #ddd;border-radius:4px;"></pre>
     </div>
     <div class="modal-footer">
-      <a href="#!" class="modal-close waves-effect waves-green btn-flat">Close</a>
       <a href="#" id="copy-bibtex" class="waves-effect waves-teal btn-flat">Copy</a>
       <a href="#" id="download-bibtex-modal" class="waves-effect waves-teal btn-flat" download="citation.bib">Download</a>
     </div>
@@ -389,11 +390,11 @@
   <!-- Citation Modal -->
   <div id="modal-citation" class="modal">
     <div class="modal-content">
+      <button class="modal-close modal-close-x" aria-label="Close">&#10005;</button>
       <h5>Citation</h5>
       <pre id="citation-content"></pre>
     </div>
     <div class="modal-footer">
-      <a href="#!" class="modal-close waves-effect waves-green btn-flat">Close</a>
       <a href="#" id="copy-citation" class="waves-effect waves-teal btn-flat">Copy</a>
     </div>
   </div>
