@@ -13,15 +13,22 @@ document.addEventListener("DOMContentLoaded", () => {
         });
     });
 
-    // ── Dark mode toggle (checkbox switch) ──
+    // ── Dark mode toggle (icon button) ──
     const darkToggle = document.getElementById("dark-mode-toggle");
     const isDark = localStorage.getItem("darkMode") === "true";
     if (isDark) document.body.classList.add("dark-mode");
     if (darkToggle) {
-        darkToggle.checked = isDark;
-        darkToggle.addEventListener("change", () => {
-            document.body.classList.toggle("dark-mode", darkToggle.checked);
-            localStorage.setItem("darkMode", darkToggle.checked);
+        const updateBtn = (dark) => {
+            darkToggle.title = dark ? "Switch to light mode" : "Switch to dark mode";
+            darkToggle.setAttribute("aria-label", darkToggle.title);
+        };
+        updateBtn(isDark);
+        darkToggle.addEventListener("click", () => {
+            const nowDark = document.body.classList.toggle("dark-mode");
+            localStorage.setItem("darkMode", nowDark);
+            updateBtn(nowDark);
+            applyChartDefaults();
+            Object.values(chartInstances).forEach((c) => c.update());
         });
     }
 
@@ -110,8 +117,8 @@ document.addEventListener("DOMContentLoaded", () => {
     // ── Load data ──
     loadCSV((data, headers) => {
         // Store globally for cross-linking and related papers
-        window._allData = data;
-        window._allHeaders = headers;
+        globalThis._allData = data;
+        globalThis._allHeaders = headers;
 
         initExport(data, headers);
         initDataTable(data, headers);
@@ -120,7 +127,7 @@ document.addEventListener("DOMContentLoaded", () => {
         M.FormSelect.init(document.querySelectorAll("select:not(.browser-default)"));
 
         // Compute year range from data
-        const allYears = data.map((r) => Math.floor(parseFloat(r.YEAR))).filter((y) => !isNaN(y));
+        const allYears = data.map((r) => Math.floor(Number.parseFloat(r.YEAR))).filter((y) => !Number.isNaN(y));
         const minYear = Math.min(...allYears);
         const maxYear = Math.max(...allYears);
 
@@ -163,7 +170,7 @@ document.addEventListener("DOMContentLoaded", () => {
             range: { min: rangeMin, max: rangeMax },
             format: {
                 to: (v) => Math.round(v),
-                from: (v) => Number(v),
+                from: Number,
             },
         });
 
@@ -179,9 +186,10 @@ document.addEventListener("DOMContentLoaded", () => {
         });
 
         // Corpus toggle buttons
-        document.querySelectorAll("#corpusToggle .corpus-btn").forEach((btn) => {
+        const corpusBtns = document.querySelectorAll("#corpusToggle .corpus-btn");
+        corpusBtns.forEach((btn) => {
             btn.addEventListener("click", () => {
-                document.querySelectorAll("#corpusToggle .corpus-btn").forEach((b) => b.classList.remove("active"));
+                for (const b of corpusBtns) b.classList.remove("active");
                 btn.classList.add("active");
                 activeCorpus = btn.dataset.corpus;
                 refresh();
@@ -265,7 +273,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
 // ── Animated stat counters ──
 function animateValue(el, newVal) {
-    const current = parseInt(el.textContent) || 0;
+    const current = Number.parseInt(el.textContent) || 0;
     if (current === newVal) return;
     const diff = newVal - current;
     const steps = Math.min(Math.abs(diff), 20);
@@ -396,7 +404,7 @@ function initExportFiltered(data, headers) {
         });
 
         const csvContent = [headerRow, ...rows]
-            .map((r) => r.map((c) => '"' + String(c).replace(/"/g, '""') + '"').join(","))
+            .map((r) => r.map((c) => '"' + String(c).replaceAll('"', '""') + '"').join(","))
             .join("\n");
 
         const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
@@ -471,7 +479,7 @@ function initSortPersistence() {
         try {
             const [col, dir] = JSON.parse(saved);
             dataTableInstance.order([col, dir]).draw();
-        } catch (e) { /* ignore */ }
+        } catch { /* ignore parse errors */ }
     }
     dataTableInstance.on("order.dt", function () {
         const order = dataTableInstance.order();
@@ -517,7 +525,7 @@ function initActiveFilterChips(headers) {
 
         // Abstract search
         const absInput = document.getElementById("abstractSearch");
-        if (absInput && absInput.value.trim()) {
+        if (absInput?.value.trim()) {
             hasChips = true;
             const chip = document.createElement("span");
             chip.className = "active-filter-chip";
@@ -547,7 +555,8 @@ function initActiveFilterChips(headers) {
                 columnFilters[ci].delete(val);
                 if (columnFilters[ci].size === 0) delete columnFilters[ci];
                 // Update checkbox UI
-                $(`.col-filter-list input[value="${val.replace(/"/g, '\\"')}"]`).prop("checked", false);
+                const escaped = val.replaceAll('"', '\\"');
+                $(`.col-filter-list input[value="${escaped}"]`).prop("checked", false);
             }
             dataTableInstance.draw();
         }
@@ -589,7 +598,6 @@ function initReadingList(data, headers) {
     const hiddenSet = new Set(["KEY", "DATABASE"]);
     const visHeaders = headers.filter((h) => !hiddenSet.has(h));
     const titleIdx = visHeaders.indexOf("TITLE");
-    const bibIdx = visHeaders.indexOf("BIBTEX");
 
     let readingList = new Set(JSON.parse(localStorage.getItem(RL_KEY) || "[]"));
 
@@ -652,8 +660,8 @@ function initReadingList(data, headers) {
     updateBadge();
 
     // Expose for title tooltip render
-    window._readingList = readingList;
-    window._readingListSave = save;
+    globalThis._readingList = readingList;
+    globalThis._readingListSave = save;
 }
 
 // ── Sparklines ──
@@ -686,7 +694,7 @@ function renderSparklines(data) {
         // Dot for max
         const maxIdx = vals.indexOf(max);
         const mx = (maxIdx / (vals.length - 1)) * w;
-        const my = h - (max / max) * (h - 4) - 2;
+        const my = h - (h - 4) - 2;
         ctx.fillStyle = "#e65100";
         ctx.beginPath();
         ctx.arc(mx, my, 2.5, 0, Math.PI * 2);
@@ -710,80 +718,65 @@ function initMobileCardView(headers) {
             document.querySelectorAll("#tabla tbody td").forEach((td) => {
                 const ci = td.cellIndex;
                 if (ci >= 0 && ci < visHeaders.length) {
-                    td.setAttribute("data-label", visHeaders[ci]);
+                    td.dataset.label = visHeaders[ci];
                 }
             });
         });
     }
 }
 
-// ── Search highlighting ──
+// ── Search highlighting (outer scope so linter sees it as a named function) ──
+function highlightCells() {
+    document.querySelectorAll("#tabla .search-highlight").forEach((el) => {
+        const parent = el.parentNode;
+        parent.replaceChild(document.createTextNode(el.textContent), el);
+        parent.normalize();
+    });
+
+    const query = dataTableInstance.search().toLowerCase();
+    const absQuery = (document.getElementById("abstractSearch")?.value || "").trim().toLowerCase();
+    const combined = query || absQuery;
+    if (!combined) return;
+
+    document.querySelectorAll("#tabla tbody td").forEach((td) => {
+        if (td.querySelector("a.green-btn, .star-btn, .title-tooltip")) return;
+        const targets = td.querySelectorAll(".table-chip");
+        const nodes = targets.length > 0 ? [...targets] : [td];
+
+        nodes.forEach((node) => {
+            if (node !== td && node.querySelector?.("a, button")) return;
+            const html = node.innerHTML;
+            const lower = html.toLowerCase();
+            const idx = lower.indexOf(combined);
+            if (idx === -1) return;
+            const before = html.substring(0, idx);
+            if ((before.match(/</g) || []).length !== (before.match(/>/g) || []).length) return;
+            node.innerHTML = html.substring(0, idx) +
+                '<span class="search-highlight">' + html.substring(idx, idx + combined.length) + "</span>" +
+                html.substring(idx + combined.length);
+        });
+    });
+}
+
 function initSearchHighlight() {
     if (!dataTableInstance) return;
-
-    function highlightCells() {
-        // Remove previous highlights first
-        document.querySelectorAll("#tabla .search-highlight").forEach((el) => {
-            const parent = el.parentNode;
-            parent.replaceChild(document.createTextNode(el.textContent), el);
-            parent.normalize();
-        });
-
-        const query = dataTableInstance.search().toLowerCase();
-        const absQuery = (document.getElementById("abstractSearch")?.value || "").trim().toLowerCase();
-        const combined = query || absQuery;
-        if (!combined) return;
-
-        document.querySelectorAll("#tabla tbody td").forEach((td) => {
-            // Skip cells with interactive elements
-            if (td.querySelector("a.green-btn, .star-btn, .title-tooltip")) return;
-            // Only highlight inside .table-chip spans and plain text
-            const targets = td.querySelectorAll(".table-chip");
-            const nodes = targets.length > 0 ? [...targets] : [td];
-
-            nodes.forEach((node) => {
-                // Skip if node has child elements we shouldn't touch
-                if (node !== td && node.querySelector && node.querySelector("a, button")) return;
-                const html = node.innerHTML;
-                const lower = html.toLowerCase();
-                const idx = lower.indexOf(combined);
-                if (idx === -1) return;
-                // Only highlight if the match is in visible text, not inside tags
-                const before = html.substring(0, idx);
-                if ((before.match(/</g) || []).length !== (before.match(/>/g) || []).length) return;
-                const safe = html.substring(0, idx) +
-                    '<span class="search-highlight">' + html.substring(idx, idx + combined.length) + '</span>' +
-                    html.substring(idx + combined.length);
-                node.innerHTML = safe;
-            });
-        });
-    }
-
     dataTableInstance.on("draw.dt", highlightCells);
 }
 
 // ── Tooltip abstract preview ──
 function initTitleTooltips(data, headers) {
     if (!dataTableInstance) return;
-    const hiddenSet = new Set(["KEY", "DATABASE"]);
-    const visHeaders = headers.filter((h) => !hiddenSet.has(h));
-    const titleIdx = visHeaders.indexOf("TITLE");
-    const abstractIdx = visHeaders.indexOf("ABSTRACT");
 
-    // Build a map of title → abstract
+    // Build a map of title → abstract directly from data keys
     const abstractMap = {};
     data.forEach((r) => {
         if (r.TITLE && r.ABSTRACT) abstractMap[r.TITLE.trim()] = r.ABSTRACT.trim();
     });
 
-    // Show tooltip on hover via event delegation (no DOM modification)
-    let activeTooltip = null;
-
     document.getElementById("tabla").addEventListener("mouseover", (e) => {
         const td = e.target.closest("td.dt-title");
         if (!td || td.querySelector(".title-tooltip")) return;
 
-        // Extract title text from the link or direct text, ignoring star button
         const link = td.querySelector("a[href]");
         const titleText = (link ? link.textContent : td.textContent).trim();
         const abstract = abstractMap[titleText];
@@ -794,14 +787,11 @@ function initTitleTooltips(data, headers) {
         tooltip.className = "title-tooltip";
         tooltip.textContent = preview;
         td.appendChild(tooltip);
-        activeTooltip = tooltip;
     });
 
     document.getElementById("tabla").addEventListener("mouseout", (e) => {
         const td = e.target.closest("td.dt-title");
         if (!td) return;
-        const tooltip = td.querySelector(".title-tooltip");
-        if (tooltip) tooltip.remove();
-        activeTooltip = null;
+        td.querySelector(".title-tooltip")?.remove();
     });
 }

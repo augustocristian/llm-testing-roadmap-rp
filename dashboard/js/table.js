@@ -507,11 +507,26 @@ function initDataTable(data, headers) {
                 wrapper.append(btn, dropdown);
                 header.append(wrapper);
 
-                // Toggle dropdown
+                // Toggle dropdown — use fixed positioning so it escapes the
+                // responsive-table overflow container on narrow viewports.
                 btn.on("click", function (e) {
                     e.stopPropagation();
-                    // Close all other dropdowns
                     $(".col-filter-dropdown.active").not(dropdown).removeClass("active");
+
+                    if (!dropdown.hasClass("active")) {
+                        const rect = btn[0].getBoundingClientRect();
+                        const dropW = 220;
+                        let left = rect.left;
+                        if (left + dropW > window.innerWidth - 8) {
+                            left = rect.right - dropW;
+                        }
+                        dropdown.css({
+                            position: "fixed",
+                            top:  rect.bottom + 2,
+                            left: Math.max(4, left),
+                            width: dropW,
+                        });
+                    }
                     dropdown.toggleClass("active");
                 });
 

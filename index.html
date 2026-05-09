@@ -50,13 +50,16 @@
   <!-- Skip navigation (accessibility) -->
   <a href="#main-content" class="skip-nav">Skip to main content</a>
 
-  <!-- Dark mode toggle switch -->
-  <label class="theme-switch" title="Toggle dark mode">
-    <span class="theme-switch-icon">&#9788;</span>
-    <input type="checkbox" id="dark-mode-toggle" />
-    <span class="theme-switch-slider"></span>
-    <span class="theme-switch-icon">&#9790;</span>
-  </label>
+  <!-- Dark mode toggle (icon button) -->
+  <button class="theme-toggle-btn" id="dark-mode-toggle" title="Switch to dark mode" aria-label="Switch to dark mode">
+    <svg class="icon-moon" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+      <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>
+    </svg>
+    <svg class="icon-sun" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+      <circle cx="12" cy="12" r="4"/>
+      <path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41"/>
+    </svg>
+  </button>
 
   <!-- Loading spinner -->
   <div id="loading-overlay">
@@ -379,7 +382,7 @@
     <div class="modal-content">
       <button class="modal-close modal-close-x" aria-label="Close">&#10005;</button>
       <h5 id="modal-bibtex-title">BibTeX</h5>
-      <pre id="modal-bibtex-content" style="white-space:pre-wrap;font-size:0.85rem;font-family:Consolas,'Liberation Mono',monospace;background:#f5f5f5;padding:12px;border:1px solid #ddd;border-radius:4px;"></pre>
+      <pre id="modal-bibtex-content"></pre>
     </div>
     <div class="modal-footer">
       <a href="#" id="copy-bibtex" class="waves-effect waves-teal btn-flat">Copy</a>

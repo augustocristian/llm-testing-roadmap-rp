@@ -1,6 +1,26 @@
 // Chart instance registry (keyed by canvas id)
 const chartInstances = {};
 
+// ── Theme helpers ──
+function getChartTheme() {
+    const dark = document.body.classList.contains("dark-mode");
+    return {
+        dark,
+        text:    dark ? "#d0d0d0" : "#444",
+        muted:   dark ? "#888"    : "#999",
+        grid:    dark ? "rgba(255,255,255,0.10)" : "rgba(0,0,0,0.08)",
+        divider: dark ? "rgba(255,255,255,0.18)" : "#CBD5E1",
+        totalLabel: dark ? "#e0e0e0" : "#333",
+        cellBorder: dark ? "#2a2a2a" : "#fff",
+    };
+}
+
+function applyChartDefaults() {
+    const t = getChartTheme();
+    Chart.defaults.color = t.text;
+    Chart.defaults.borderColor = t.grid;
+}
+
 function destroyChart(canvasId) {
     if (chartInstances[canvasId]) {
         chartInstances[canvasId].destroy();
@@ -33,6 +53,7 @@ function generateColors(count, lightness = 65) {
 
 // ── Bar chart (horizontal) ──
 function renderBarChart(canvasId, labels, data, label, options = {}) {
+    applyChartDefaults();
     destroyChart(canvasId);
     const canvas = getCanvas(canvasId);
     chartInstances[canvasId] = new Chart(canvas, {
@@ -63,6 +84,7 @@ function renderBarChart(canvasId, labels, data, label, options = {}) {
 
 // ── LLM usage timeline heatmap (bar chart fallback) ──
 function renderLLMHeatmap(canvasId, years, llms, counts) {
+    applyChartDefaults();
     destroyChart(canvasId);
     const colors = generateColors(llms.length);
     const datasets = llms.map((llm, i) => ({
@@ -92,6 +114,7 @@ function renderLLMHeatmap(canvasId, years, llms, counts) {
 
 // ── Pie chart ──
 function renderPieChart(canvasId, labels, data) {
+    applyChartDefaults();
     destroyChart(canvasId);
     chartInstances[canvasId] = new Chart(getCanvas(canvasId), {
         type: "pie",
@@ -115,6 +138,7 @@ function renderPieChart(canvasId, labels, data) {
 
 // ── Line chart (for trends over time) ──
 function renderLineChart(canvasId, labels, datasets, title) {
+    applyChartDefaults();
     destroyChart(canvasId);
     chartInstances[canvasId] = new Chart(getCanvas(canvasId), {
         type: "line",
@@ -155,6 +179,8 @@ function chartClickFilter(field, value) {
 
 // ── Venue stacked bar (year × conference/journal/arXiv) ──
 function renderVenueChart(canvasId, years, datasets, venueGroups) {
+    applyChartDefaults();
+    const t = getChartTheme();
     destroyChart(canvasId);
 
     // Build grouped HTML legend container
@@ -196,7 +222,7 @@ function renderVenueChart(canvasId, years, datasets, venueGroups) {
                 if (!meta0.data.length) return;
                 ctx.save();
                 ctx.font = "bold 11px sans-serif";
-                ctx.fillStyle = "#333";
+                ctx.fillStyle = getChartTheme().totalLabel;
                 ctx.textAlign = "center";
                 ctx.textBaseline = "bottom";
                 for (let i = 0; i < meta0.data.length; i++) {
@@ -219,10 +245,10 @@ function renderVenueChart(canvasId, years, datasets, venueGroups) {
     let idx = 0;
     (venueGroups || []).forEach((group) => {
         if (group.count === 0) return;
-        html += `<div style="font-weight:bold;font-size:11px;margin:6px 0 2px;color:#333;">${group.title}</div>`;
+        html += `<div style="font-weight:bold;font-size:11px;margin:6px 0 2px;color:${t.text};">${group.title}</div>`;
         for (let i = 0; i < group.count; i++) {
             const ds = datasets[idx + i];
-            html += `<div style="display:flex;align-items:center;gap:4px;font-size:10px;padding:1px 0;cursor:pointer;" data-dsi="${idx + i}">` +
+            html += `<div style="display:flex;align-items:center;gap:4px;font-size:10px;padding:1px 0;cursor:pointer;color:${t.text};" data-dsi="${idx + i}">` +
                 `<span style="display:inline-block;width:12px;height:12px;background:${ds.backgroundColor};border-radius:2px;flex-shrink:0;"></span>` +
                 `<span>${ds.label}</span></div>`;
         }
@@ -246,6 +272,8 @@ function renderVenueChart(canvasId, years, datasets, venueGroups) {
 // ── Generic cross-tab matrix heatmap (chartjs-chart-matrix) ──
 // counts: function(row, col) → number
 function renderCrossHeatmap(canvasId, rowLabels, colLabels, counts, xTitle, yTitle, palette) {
+    applyChartDefaults();
+    const t = getChartTheme();
     destroyChart(canvasId);
     const [r, g, b] = palette || [0, 105, 92];
 
@@ -267,7 +295,7 @@ function renderCrossHeatmap(canvasId, rowLabels, colLabels, counts, xTitle, yTit
                     const a = v === 0 ? 0.04 : 0.12 + (v / maxVal) * 0.82;
                     return `rgba(${r},${g},${b},${a.toFixed(2)})`;
                 },
-                borderColor: "#fff",
+                borderColor: t.cellBorder,
                 borderWidth: 2,
                 width:  ({ chart }) => { const a = chart.chartArea; return a ? (a.width  / colLabels.length) - 2 : 30; },
                 height: ({ chart }) => { const a = chart.chartArea; return a ? (a.height / rowLabels.length) - 2 : 20; },
@@ -312,6 +340,7 @@ function renderCrossHeatmap(canvasId, rowLabels, colLabels, counts, xTitle, yTit
 
 // ── Stacked area chart ──
 function renderStackedAreaChart(canvasId, labels, datasets, yLabel) {
+    applyChartDefaults();
     destroyChart(canvasId);
     chartInstances[canvasId] = new Chart(getCanvas(canvasId), {
         type: "line",
@@ -343,6 +372,8 @@ function hexAlpha(hex, a) {
 
 // ── Sankey chart ──
 function renderSankeyChart(canvasId, links, nodeColors, nodeLabels) {
+    applyChartDefaults();
+    const t = getChartTheme();
     destroyChart(canvasId);
 
     const DIM_HEADERS = [
@@ -376,7 +407,7 @@ function renderSankeyChart(canvasId, links, nodeColors, nodeLabels) {
             ctx.save();
             ctx.textAlign = "center";
             ctx.textBaseline = "bottom";
-            ctx.fillStyle = "#333";
+            ctx.fillStyle = getChartTheme().text;
 
             colPositions.forEach((pos, col) => {
                 const lines = DIM_HEADERS[col] || [`Col ${col}`];
@@ -400,7 +431,7 @@ function renderSankeyChart(canvasId, links, nodeColors, nodeLabels) {
                 colorTo:   (c) => hexAlpha(nodeColors[c.dataset.data[c.dataIndex].to]   || "#90a4ae", 0.55),
                 colorMode: "gradient",
                 labels: nodeLabels || {},
-                color: "#334155",
+                color: t.text,
                 font: { size: 14, family: "'Lato', 'Helvetica Neue', Arial, sans-serif" },
                 size: "max",
                 nodePadding: 22,
@@ -431,6 +462,7 @@ function renderSankeyChart(canvasId, links, nodeColors, nodeLabels) {
 // ── Bubble chart (trends × classification dimensions) ──
 // bubbleData: { datasets, xSlots: {pos,label,dimIdx}[], xGroups: {label,startPos,endPos,color,band}[], yLabels: string[], maxX: number }
 function renderBubbleChart(canvasId, bubbleData) {
+    applyChartDefaults();
     destroyChart(canvasId);
 
     const { datasets, xSlots, xGroups, yLabels, maxX } = bubbleData;
@@ -486,7 +518,7 @@ function renderBubbleChart(canvasId, bubbleData) {
                         font: { size: 11 },
                         callback: (val) => yLabels[val] || "",
                     },
-                    grid: { color: "rgba(0,0,0,0.06)", lineWidth: 0.8 },
+                    grid: { color: getChartTheme().grid, lineWidth: 0.8 },
                 },
             },
         },
@@ -517,7 +549,7 @@ function drawDimDividers(chart, xGroups) {
     const { ctx, chartArea: { top, bottom }, scales: { x: xScale } } = chart;
     ctx.save();
     ctx.setLineDash([3, 3]);
-    ctx.strokeStyle = "#CBD5E1";
+    ctx.strokeStyle = getChartTheme().divider;
     ctx.lineWidth = 1;
     for (let i = 0; i < xGroups.length - 1; i++) {
         const mid = (xGroups[i].endPos + xGroups[i + 1].startPos) / 2;
